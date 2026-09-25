@@ -8,6 +8,9 @@ const path = require('path');
 const { execFile } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
 
+// On Windows, npm must be called as npm.cmd
+const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 const MAX_EVIDENCE = 200;
 
 /**
@@ -131,9 +134,11 @@ function collectJsFiles(dir) {
 function runNpmTest(projectPath) {
   return new Promise((resolve) => {
     // Allowlisted command: npm test
-    execFile('npm', ['test'], {
+    // shell:true required on Windows for .cmd scripts
+    execFile(NPM, ['test'], {
       cwd: projectPath,
       timeout: 30000,
+      shell: true,
       env: { ...process.env, CI: 'true' },
     }, (error, stdout, stderr) => {
       resolve({

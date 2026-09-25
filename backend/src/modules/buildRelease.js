@@ -8,6 +8,9 @@ const path = require('path');
 const { execFile } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
 
+// On Windows, npm must be called as npm.cmd
+const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 const MAX_EVIDENCE = 200;
 
 // Simple semver pattern (major.minor.patch with optional pre-release)
@@ -60,7 +63,7 @@ async function analyze(projectPath) {
   }
 
   // 2. Run npm install (timed)
-  const installResult = await runCommand('npm', ['install', '--prefer-offline'], projectPath, 60000);
+  const installResult = await runCommand(NPM, ['install', '--prefer-offline'], projectPath, 60000);
 
   if (installResult.exitCode !== 0) {
     findings.push(makeFinding({
@@ -79,7 +82,7 @@ async function analyze(projectPath) {
   }
 
   // 3. Run npm test (timed, re-use result from testHealth if available — but we run independently for timing)
-  const testResult = await runCommand('npm', ['test'], projectPath, 60000);
+  const testResult = await runCommand(NPM, ['test'], projectPath, 60000);
 
   if (testResult.exitCode !== 0) {
     findings.push(makeFinding({
@@ -111,7 +114,7 @@ async function analyze(projectPath) {
 
   // 4. Check if a build script exists and run it if so
   if (pkg.scripts && pkg.scripts.build) {
-    const buildResult = await runCommand('npm', ['run', 'build'], projectPath, 120000);
+    const buildResult = await runCommand(NPM, ['run', 'build'], projectPath, 120000);
     if (buildResult.exitCode !== 0) {
       findings.push(makeFinding({
         category: 'build-release',
@@ -134,9 +137,11 @@ async function analyze(projectPath) {
 function runCommand(cmd, args, cwd, timeout) {
   const start = Date.now();
   return new Promise((resolve) => {
+    // shell:true required on Windows for .cmd scripts
     execFile(cmd, args, {
       cwd,
       timeout,
+      shell: true,
       env: { ...process.env, CI: 'true' },
     }, (error, stdout, stderr) => {
       resolve({
