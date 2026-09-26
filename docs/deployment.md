@@ -95,6 +95,43 @@ core design decision. It has not been done deliberately.
 host the UI shell, but analysis has to happen on a machine with a writable
 filesystem and a working `npm`.
 
+## Deploying the backend on its own
+
+A project whose Root Directory is `backend` gets a serverless function from
+`backend/api/index.js`, which mirrors the root entry one level down. It exports
+`../src/server` without calling `listen()`, because Vercel invokes the function
+itself. `backend/vercel.json` sets the function memory and duration, and
+`backend/package.json` defines a `vercel-build` that syntax-checks the entry
+files, so the project builds whatever Build Command the dashboard holds.
+
+Settings:
+
+| Setting | Value | Why |
+|---|---|---|
+| Root Directory | `backend` | Puts `backend/api/index.js` where Vercel looks for a function |
+| Build Command | `npm run vercel-build` | Defined in `backend/package.json` |
+| **Output Directory** | **leave empty** | There is no static build — see below |
+| Install Command | leave the default | |
+
+**Output Directory must be empty for this project.** An explicit output
+directory tells Vercel to expect static output and search it for an
+entrypoint, so a project with only a serverless function fails with:
+
+```
+Error: No entrypoint found in output directory: "frontend/dist". Searched for:
+```
+
+That message usually means the field was carried over from the combined
+deployment, where `frontend/dist` is correct. A function-only project emits no
+static files, so there is nothing for Vercel to serve as an entrypoint.
+
+As with the frontend, `vercel-build` did not originally exist in
+`backend/package.json`; a backend-rooted project asking for it produced the
+same `Missing script: "vercel-build"` error.
+
+This serves `/api/health` and `/api/projects`. Starting an analysis does not
+work here — see above.
+
 ## Deploying the frontend on its own
 
 If you want the UI on Vercel even though the API cannot run there, deploy
@@ -117,16 +154,15 @@ Settings:
 | Output Directory | `dist` |
 | Install Command | leave the default |
 
+Note the Output Directory is `dist` here, not `frontend/dist`. It shifts with
+the Root Directory, which is the same trap as the backend case above.
+
 `npm run vercel-build` is a **root-level** script for the combined deployment.
 `frontend/package.json` originally defined only `dev`, `build` and `preview`, so
 a frontend-rooted project asking for `vercel-build` failed with
 `Missing script: "vercel-build"` — a misleading message, since the script did
 exist, just in a different `package.json`. The alias above removes that failure
 mode.
-
-Note the Output Directory changes with the Root Directory. It is `dist` for a
-frontend-rooted project, not `frontend/dist`, which is the value the root
-`vercel.json` uses.
 
 Set `VITE_API_URL` on the frontend project to the API origin. Vite inlines
 `VITE_*` variables at build time, so changing it requires a rebuild. The

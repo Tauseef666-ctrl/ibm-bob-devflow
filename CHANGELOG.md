@@ -53,6 +53,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the repository root. This cannot be enforced from the repository, because
   Vercel does not read a root directory from `vercel.json`. See
   `docs/deployment.md`.
+- **Output Directory must be empty on a function-only Vercel project.** An
+  explicit value makes Vercel search the output for a static entrypoint and
+  fail with `No entrypoint found in output directory`. The value also shifts
+  with the Root Directory: `frontend/dist` for the combined deployment, `dist`
+  for a frontend-rooted one, and empty for a backend-rooted one. See
+  `docs/deployment.md`.
 - **The analysis API cannot run on Vercel.** Verified, and deliberate: the target
   is resolved as a fixed relative path (`backend/src/routes/analysis.js`), the
   build/release module shells out to `npm install` and `npm test`, and
