@@ -27,6 +27,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
       try {
         const data = await api.getStatus(sessionId);
         setSession(data);
+        // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally only run on mount
         onSessionStart && onSessionStart(sessionId);
 
         if (data.status === 'completed') {
@@ -53,7 +54,9 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
       clearInterval(intervalRef.current);
       clearInterval(timerRef.current);
     };
-  }, [sessionId]);
+  // onSessionStart is intentionally omitted — it's a stable callback passed once from App
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]); // eslint-disable-line
 
   const formatMs = (ms) => {
     if (ms < 1000) return `${ms}ms`;

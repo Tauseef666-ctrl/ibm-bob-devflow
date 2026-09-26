@@ -40,7 +40,7 @@ export function ActionPlanPage({ sessionId }) {
     setRemediating(item.id);
     try {
       // Apply all remediable findings in this plan item
-      const remediableFindings = item.findingIds
+      const remediableFindings = (item.findingIds || [])
         .map(id => findings.find(f => f.id === id))
         .filter(f => f && f.remediable && f.status !== 'fixed');
 
@@ -109,7 +109,7 @@ export function ActionPlanPage({ sessionId }) {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
           {plan.map(item => {
             const effortStyle = EFFORT_COLORS[item.effort] || EFFORT_COLORS.medium;
-            const itemFindings = item.findingIds.map(id => findings.find(f => f.id === id)).filter(Boolean);
+            const itemFindings = (item.findingIds || []).map(id => findings.find(f => f.id === id)).filter(Boolean);
             const allFixed = itemFindings.every(f => f.status === 'fixed');
             const hasOpen = itemFindings.some(f => f && f.remediable && f.status !== 'fixed');
 

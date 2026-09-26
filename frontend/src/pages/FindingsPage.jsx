@@ -50,7 +50,7 @@ export function FindingsPage({ sessionId }) {
 
   const filtered = findings.filter(f => {
     if (activeCategory !== 'all' && f.category !== activeCategory) return false;
-    if (activeSeverity !== 'all' && f.severity !== activeSeverity && f.status !== activeSeverity) return false;
+    if (activeSeverity !== 'all' && f.severity !== activeSeverity) return false;
     return true;
   });
 
