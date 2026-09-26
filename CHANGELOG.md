@@ -7,7 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Added
+
+- **Vercel deployment configuration** — `vercel.json` routes `/api/*` to a
+  serverless function (`api/index.js`) that wraps the existing Express app, so
+  the SPA and the API are served from a single origin and no CORS preflight is
+  needed in production. A `vercel-build` script installs all four packages and
+  builds the frontend.
+- **Environment variable templates** — `.env.example` at the root and in
+  `frontend/`, both containing commented placeholders only.
+- **Configurable CORS** — the backend accepts a `FRONTEND_URL` environment
+  variable in addition to the two localhost origins, and allows credentialed
+  requests. Requests without an `Origin` header are still permitted for
+  command-line and server-to-server use.
+- **Frontend resilience** — an `ErrorBoundary` wraps the app so a render error
+  shows a recoverable message instead of a blank page, plus a `NotFoundPage`
+  for unmatched routes.
+- **Accessibility and SEO** — skip-to-content link, `main` landmark id, Open
+  Graph and description meta tags, and `robots.txt`.
+- **Responsive styles** — a mobile breakpoint and a loading spinner in
+  `globals.css`.
+
+### Changed
+
+- `uuid` upgraded from v9 to v14 in the backend. The CommonJS
+  `require('uuid')` call style is unaffected; verified that all backend modules
+  still load and the test suite still passes.
+- `frontend/public/_redirects` added for static hosts that support it. On
+  Vercel the equivalent SPA fallback is declared in `vercel.json`.
+
+### Known Issues
+
+- Deployment is configured but has not been verified against a live Vercel
+  deployment. The serverless function is capped at a 30 second duration, while
+  a local analysis run takes roughly 14 seconds with `npm install` and
+  `npm test` executing against the sample project. A cold start may exceed that
+  budget.
+- Serverless deployments bundle the project read-only, so the sample project
+  must be present in the deployed bundle for the build/release module to run.
+  This has not been confirmed on Vercel.
 
 ## [1.0.0] - 2026-09-26
 

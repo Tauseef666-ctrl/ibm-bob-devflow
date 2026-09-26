@@ -11,11 +11,17 @@ build/
 .env.local
 .env.*.local
 
+# Deployment
+.vercel/
+
 # Editor
 .vscode/
 .idea/
 *.swp
 *.swo
+
+# Logs
+*.log
 
 # OS
 .DS_Store
