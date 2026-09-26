@@ -1,8 +1,43 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { api } from '../../api/client';
+
+/**
+ * Polls the health endpoint so a dead backend is visible in the header rather
+ * than only as a failed request on whichever page happens to be open.
+ */
+function useApiHealth(intervalMs = 20000) {
+  const [state, setState] = useState('checking');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function check() {
+      try {
+        await api.health();
+        if (!cancelled) setState('online');
+      } catch {
+        if (!cancelled) setState('offline');
+      }
+    }
+
+    check();
+    const id = setInterval(check, intervalMs);
+    return () => { cancelled = true; clearInterval(id); };
+  }, [intervalMs]);
+
+  return state;
+}
+
+const HEALTH_COPY = {
+  checking: 'Checking API…',
+  online:   'API connected',
+  offline:  'API unreachable',
+};
 
 export function Header({ sessionId }) {
   const navigate = useNavigate();
+  const health = useApiHealth();
 
   return (
     <header style={{
@@ -48,8 +83,25 @@ export function Header({ sessionId }) {
         </span>
       </div>
 
+      <span
+        title={HEALTH_COPY[health]}
+        aria-label={HEALTH_COPY[health]}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 6,
+          fontSize: 'var(--font-size-xs)',
+          color: 'rgba(255,255,255,0.55)',
+          marginLeft: 'auto',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        <span className={`status-dot status-dot-${health}`} />
+        <span style={{ display: 'none' }}>{HEALTH_COPY[health]}</span>
+      </span>
+
       {sessionId && (
-        <nav style={{ display: 'flex', gap: 'var(--space-1)', marginLeft: 'auto' }}>
+        <nav style={{ display: 'flex', gap: 'var(--space-1)' }}>
           {[
             { to: `/analysis/${sessionId}`, label: 'Progress' },
             { to: `/analysis/${sessionId}/findings`, label: 'Findings' },

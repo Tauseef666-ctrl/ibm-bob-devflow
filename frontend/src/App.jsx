@@ -8,6 +8,7 @@ import { FindingsPage } from './pages/FindingsPage';
 import { ActionPlanPage } from './pages/ActionPlanPage';
 import { ReportPage } from './pages/ReportPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { ToastProvider } from './components/ui/Toast';
 
 function AnalysisRoutes({ setActiveSession }) {
   const { id } = useParams();
@@ -27,31 +28,33 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <a className="skip-link" href="#main-content">Skip to content</a>
-      <Header sessionId={activeSession} />
-      <main id="main-content" style={{ flex: 1 }}>
-        <Routes>
-          <Route path="/" element={<DashboardPage onSessionStart={setActiveSession} />} />
-          <Route
-            path="/analysis/:id/*"
-            element={<AnalysisRoutes setActiveSession={setActiveSession} />}
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </main>
-      <footer style={{
-        borderTop: '1px solid var(--color-border)',
-        padding: 'var(--space-4) var(--space-6)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        fontSize: 'var(--font-size-xs)',
-        color: 'var(--color-text-subtle)',
-        background: 'var(--color-surface)',
-      }}>
-        <span>⚡ DevFlow AI — IBM Bob 2.0 Hackathon</span>
-        <span>Built by The7th Neo</span>
-      </footer>
+      <ToastProvider>
+        <a className="skip-link" href="#main-content">Skip to content</a>
+        <Header sessionId={activeSession} />
+        <main id="main-content" style={{ flex: 1 }}>
+          <Routes>
+            <Route path="/" element={<DashboardPage onSessionStart={setActiveSession} />} />
+            <Route
+              path="/analysis/:id/*"
+              element={<AnalysisRoutes setActiveSession={setActiveSession} />}
+            />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </main>
+        <footer style={{
+          borderTop: '1px solid var(--color-border)',
+          padding: 'var(--space-4) var(--space-6)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: 'var(--font-size-xs)',
+          color: 'var(--color-text-subtle)',
+          background: 'var(--color-surface)',
+        }}>
+          <span>⚡ DevFlow AI — IBM Bob 2.0 Hackathon</span>
+          <span>Built by The7th Neo</span>
+        </footer>
+      </ToastProvider>
     </ErrorBoundary>
   );
 }

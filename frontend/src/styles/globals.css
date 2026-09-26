@@ -244,6 +244,138 @@ code, pre {
 }
 .skip-link:focus { top: 0; }
 
+/* ── Text input ───────────────────────────────────────────────────────────── */
+.input {
+  width: 100%;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 7px 10px 7px 30px;
+}
+.input::placeholder { color: var(--color-text-subtle); }
+.input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px var(--color-accent-light);
+}
+.search-wrap { position: relative; display: flex; align-items: center; }
+.search-icon {
+  position: absolute;
+  left: 9px;
+  color: var(--color-text-subtle);
+  pointer-events: none;
+  display: flex;
+}
+.search-clear {
+  position: absolute;
+  right: 6px;
+  background: transparent;
+  color: var(--color-text-subtle);
+  padding: 2px 5px;
+  font-size: 14px;
+  line-height: 1;
+}
+.search-clear:hover { color: var(--color-text); }
+
+select.input {
+  padding: 7px 10px;
+  cursor: pointer;
+  width: auto;
+}
+
+/* ── Filter chip ──────────────────────────────────────────────────────────── */
+.chip {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+}
+.chip:hover:not(:disabled) { background: var(--color-surface-2); }
+.chip-active {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #fff;
+}
+.chip-active:hover:not(:disabled) { background: var(--color-accent-hover); }
+
+/* ── Overall progress bar ─────────────────────────────────────────────────── */
+.progress-track {
+  height: 6px;
+  background: var(--color-surface-2);
+  border-radius: 20px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--color-accent);
+  border-radius: 20px;
+  transition: width 0.4s ease;
+}
+.progress-fill-done { background: var(--color-pass); }
+
+/* ── Toasts ───────────────────────────────────────────────────────────────── */
+.toast-region {
+  position: fixed;
+  bottom: var(--space-5);
+  right: var(--space-5);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  max-width: 340px;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  box-shadow: var(--shadow-md);
+  font-size: var(--font-size-sm);
+  animation: fadeUp 0.25s ease-out;
+}
+.toast-success { border-color: var(--color-low-border);  background: var(--color-pass-bg);     color: var(--color-pass); }
+.toast-error   { border-color: var(--color-critical-border); background: var(--color-critical-bg); color: var(--color-critical); }
+.toast-info    { border-color: var(--color-accent-light);  background: var(--color-accent-light); color: var(--color-accent); }
+.toast-close {
+  background: transparent;
+  color: inherit;
+  opacity: 0.6;
+  padding: 0 2px;
+  font-size: 15px;
+  line-height: 1;
+}
+.toast-close:hover { opacity: 1; }
+
+@media (max-width: 700px) {
+  .toast-region { left: var(--space-4); right: var(--space-4); max-width: none; }
+}
+
+/* ── Status dot (connection indicator) ───────────────────────────────────── */
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.status-dot-online  { background: var(--color-pass); }
+.status-dot-offline { background: var(--color-critical); }
+.status-dot-checking { background: var(--color-medium); animation: pulse 1.1s ease-in-out infinite; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
 /* ── Scroll bar polish ───────────────────────────────────────────────────── */
 * { scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }

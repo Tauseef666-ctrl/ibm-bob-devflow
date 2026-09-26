@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import { useToast } from '../components/ui/Toast';
 
 // ─── Static config ────────────────────────────────────────────────────────────
 
@@ -85,6 +86,65 @@ function formatDate(epoch) {
   });
 }
 
+/** Renders the report as Markdown, for pasting into a PR or an issue. */
+function toMarkdown(report) {
+  const s = report.scoreSummary;
+  const lines = [
+    `# Release Readiness Report — run ${report.runNumber}`,
+    '',
+    `**Status:** ${OVERALL_CONFIG[report.overallStatus]?.label || report.overallStatus}`,
+    `**Generated:** ${new Date(report.generatedAt).toISOString()}`,
+    '',
+    '## Findings',
+    '',
+    '| Severity | Count |',
+    '| --- | --- |',
+    `| Critical | ${s.critical} |`,
+    `| High | ${s.high} |`,
+    `| Medium | ${s.medium} |`,
+    `| Low | ${s.low} |`,
+    `| Info | ${s.info} |`,
+    `| Fixed | ${s.fixed} |`,
+    `| **Total open** | **${s.total}** |`,
+    '',
+    '## Categories',
+    '',
+    '| Category | Status | Issues |',
+    '| --- | --- | --- |',
+  ];
+  for (const c of report.categoryResults || []) {
+    lines.push(`| ${c.label} | ${CAT_STATUS_CONFIG[c.status]?.label || c.status} | ${c.findingCount} |`);
+  }
+  if (report.beforeAfter) {
+    const b = report.beforeAfter;
+    lines.push(
+      '',
+      '## Before vs after',
+      '',
+      `Run 1: ${b.run1FindingCount} → Run ${report.runNumber}: ${b.run2FindingCount} (${b.fixedCount} fixed, ${b.remainingCount} remaining)`,
+    );
+  }
+  if (report.workflowTimeline?.length) {
+    lines.push('', '## Workflow timeline', '', '| Module | Duration |', '| --- | --- |');
+    for (const step of report.workflowTimeline) {
+      lines.push(`| ${step.step} | ${formatMs(step.durationMs)} |`);
+    }
+  }
+  return lines.join('\n');
+}
+
+function download(filename, contents, type) {
+  const blob = new Blob([contents], { type });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 // ─── Sub-components ────────────────────────────────────────────────────────────
 
 function ReadinessGauge({ score, info }) {
@@ -167,6 +227,7 @@ function ErrorState({ error, onBack }) {
 
 export function ReportPage({ sessionId }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [report, setReport]       = useState(null);
   const [loading, setLoading]     = useState(true);
   const [error, setError]         = useState(null);
@@ -189,9 +250,10 @@ export function ReportPage({ sessionId }) {
     setReanalyzing(true);
     try {
       const { sessionId: newId } = await api.reanalyze(sessionId);
+      toast.info('Re-analysis started');
       navigate(`/analysis/${newId}`);
     } catch (err) {
-      alert('Re-analysis failed: ' + err.message);
+      toast.error(`Re-analysis failed: ${err.message}`);
       setReanalyzing(false);
     }
   }
@@ -226,18 +288,46 @@ export function ReportPage({ sessionId }) {
             Run #{report.runNumber} · Generated {formatDate(report.generatedAt)}
           </p>
         </div>
-        <button
-          className="btn-ghost"
-          onClick={handleReanalyze}
-          disabled={reanalyzing}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
-        >
-          {reanalyzing ? (
-            <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Starting…</>
-          ) : (
-            <><IconRefresh size={13} /> Re-Run Analysis</>
-          )}
-        </button>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 13 }}
+            onClick={async () => {
+              const md = toMarkdown(report);
+              try {
+                await navigator.clipboard.writeText(md);
+                toast.success('Report copied as Markdown');
+              } catch {
+                download(`devflow-report-run${report.runNumber}.md`, md, 'text/markdown');
+                toast.info('Clipboard blocked — downloaded Markdown instead');
+              }
+            }}
+          >
+            Copy Markdown
+          </button>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 13 }}
+            onClick={() => {
+              download(`devflow-report-run${report.runNumber}.json`, JSON.stringify(report, null, 2), 'application/json');
+              toast.success('Report downloaded as JSON');
+            }}
+          >
+            Export JSON
+          </button>
+          <button
+            className="btn-ghost"
+            onClick={handleReanalyze}
+            disabled={reanalyzing}
+            style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
+          >
+            {reanalyzing ? (
+              <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Starting…</>
+            ) : (
+              <><IconRefresh size={13} /> Re-Run Analysis</>
+            )}
+          </button>
+        </div>
       </div>
 
       {/* ── Hero: gauge + status banner ── */}

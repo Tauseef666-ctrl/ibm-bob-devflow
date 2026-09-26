@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { SeverityBadge } from '../components/findings/SeverityBadge';
+import { useToast } from '../components/ui/Toast';
 
 // ─── Static config ─────────────────────────────────────────────────────────────
 
@@ -339,6 +340,7 @@ function ActionCard({ item, findings, remediating, onRemediate, navigate, sessio
 
 export function ActionPlanPage({ sessionId }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const [plan, setPlan]         = useState([]);
   const [findings, setFindings] = useState([]);
   const [loading, setLoading]   = useState(true);
@@ -374,8 +376,13 @@ export function ActionPlanPage({ sessionId }) {
         await api.remediate(sessionId, f.remediationId, f.id);
       }
       await load();
+      toast.success(
+        remediable.length === 1
+          ? 'Auto-fix applied to 1 finding'
+          : `Auto-fix applied to ${remediable.length} findings`,
+      );
     } catch (err) {
-      alert('Remediation failed: ' + err.message);
+      toast.error(`Remediation failed: ${err.message}`);
     } finally {
       setRemediating(null);
     }
@@ -385,9 +392,10 @@ export function ActionPlanPage({ sessionId }) {
     setReanalyzing(true);
     try {
       const { sessionId: newId } = await api.reanalyze(sessionId);
+      toast.info('Re-analysis started');
       navigate(`/analysis/${newId}`);
     } catch (err) {
-      alert('Re-analysis failed: ' + err.message);
+      toast.error(`Re-analysis failed: ${err.message}`);
       setReanalyzing(false);
     }
   }
