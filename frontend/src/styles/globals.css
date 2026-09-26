@@ -204,3 +204,48 @@ code, pre {
   border-top: 1px solid var(--color-border);
   margin: var(--space-4) 0;
 }
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 700px) {
+  :root {
+    --content-max: 100%;
+    --font-size-2xl: 22px;
+    --font-size-xl: 18px;
+  }
+  .card { padding: var(--space-4); }
+}
+
+/* ── Loading spinner ─────────────────────────────────────────────────────── */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--color-border);
+  border-top-color: var(--color-accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Skip to content (accessibility) ────────────────────────────────────── */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--color-accent);
+  color: #fff;
+  padding: 8px 16px;
+  z-index: 200;
+  font-size: var(--font-size-sm);
+  border-radius: 0 0 var(--radius) 0;
+  transition: top 0.2s;
+}
+.skip-link:focus { top: 0; }
+
+/* ── Scroll bar polish ───────────────────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: var(--color-border) transparent; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
