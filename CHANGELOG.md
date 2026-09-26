@@ -46,14 +46,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the repository root. This cannot be enforced from the repository, because
   Vercel does not read a root directory from `vercel.json`. See
   `docs/deployment.md`.
-- Deployment is configured but has not been verified against a live Vercel
-  deployment. The serverless function is capped at a 30 second duration, while
-  a local analysis run takes roughly 14 seconds with `npm install` and
-  `npm test` executing against the sample project. A cold start may exceed that
-  budget.
-- Serverless deployments bundle the project read-only, so the sample project
-  must be present in the deployed bundle for the build/release module to run.
-  This has not been confirmed on Vercel.
+- **The analysis API cannot run on Vercel.** Verified, and deliberate: the target
+  is resolved as a fixed relative path (`backend/src/routes/analysis.js`), the
+  build/release module shells out to `npm install` and `npm test`, and
+  auto-remediation writes real files. A serverless bundle is read-only and does
+  not contain `sample-project/`, so all three fail. Removing them would mean
+  dropping the real wall-clock module timings, which is a core design decision
+  in `AGENTS.md`. Run the demo locally with `npm start`; treat Vercel as a UI
+  shell only. Details in `docs/deployment.md`.
 
 ## [1.0.0] - 2026-09-26
 
