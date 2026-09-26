@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the SPA and the API are served from a single origin and no CORS preflight is
   needed in production. A `vercel-build` script installs all four packages and
   builds the frontend.
+- **Vercel deployment guide** — `docs/deployment.md` documents how the SPA and
+  the API are served from one origin, the required project settings, and the
+  `Root Directory` pitfall that makes the build fail with a misleading
+  `Missing script: "vercel-build"` error.
 - **Environment variable templates** — `.env.example` at the root and in
   `frontend/`, both containing commented placeholders only.
 - **Configurable CORS** — the backend accepts a `FRONTEND_URL` environment
@@ -38,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Known Issues
 
+- The Vercel **Root Directory** setting must be left empty so the build runs at
+  the repository root. This cannot be enforced from the repository, because
+  Vercel does not read a root directory from `vercel.json`. See
+  `docs/deployment.md`.
 - Deployment is configured but has not been verified against a live Vercel
   deployment. The serverless function is capped at a 30 second duration, while
   a local analysis run takes roughly 14 seconds with `npm install` and
