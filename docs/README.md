@@ -3,6 +3,7 @@
 | Document | Purpose |
 |---|---|
 | [architecture.md](architecture.md) | How the system is put together: layout, control flow, data model, security model, and the rationale behind each technology choice |
+| [architecture-diagram.png](architecture-diagram.png) | Architecture diagram of the build |
 | [WORKFLOW.md](WORKFLOW.md) | The analysis pipeline in detail — what each of the five modules checks, and how findings become an action plan and report |
 | [DEMO.md](DEMO.md) | Step-by-step demo script for the hackathon, with talking points and timing |
 | [devflow-plan.md](devflow-plan.md) | The architecture and 9-sub-task implementation plan produced in IBM Bob plan mode, with per-sub-task status |

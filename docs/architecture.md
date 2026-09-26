@@ -3,6 +3,8 @@
 This document describes how DevFlow AI is put together. For the step-by-step
 analysis pipeline and module-by-module checks, see [WORKFLOW.md](WORKFLOW.md).
 
+![DevFlow AI architecture diagram](architecture-diagram.png)
+
 ## System Context
 
 DevFlow AI analyses **one target project at a time**. In this repository the

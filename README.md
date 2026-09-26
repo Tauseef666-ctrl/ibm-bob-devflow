@@ -102,7 +102,8 @@ flowchart LR
 ```
 
 Full detail: [`docs/architecture.md`](docs/architecture.md) for the system design
-and [`docs/WORKFLOW.md`](docs/WORKFLOW.md) for the analysis pipeline.
+(including an [architecture diagram](docs/architecture-diagram.png)) and
+[`docs/WORKFLOW.md`](docs/WORKFLOW.md) for the analysis pipeline.
 
 ## Setup
 
