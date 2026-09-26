@@ -395,8 +395,8 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ## Security Controls
 
 1. `projectPath` is validated against an allowlist of permitted directories (only paths under `sample-project/` accepted)
-2. Commands executed via `child_process.execFile` with explicit argument arrays — no shell interpolation
-3. Only `npm install`, `npm test`, `npm run build` are in the command allowlist
+2. Commands are restricted to a hardcoded allowlist — only `npm install`, `npm test`, `npm run build`, each built in source from string literals. No user-supplied input reaches a command line
+3. A shell is required because `npm` resolves to `npm.cmd` on Windows and cannot be executed directly. The binary is selected by a platform check, never by input. An earlier `execFile` + `shell: true` implementation was replaced because it triggered a DEP0190 deprecation warning on every analysis run
 4. Finding evidence is truncated to 200 characters; no env values or secrets are extracted
 5. Configuration module skips `.env` files entirely — only `.env.example` is read
 6. All API responses use `Content-Type: application/json`; no raw file content is served
@@ -408,7 +408,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 1 — Project Scaffold and Root Configuration
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Create the root directory skeleton, workspace package.json, .gitignore, AGENTS.md, bob_sessions/, and skeleton documentation files. No logic yet.
 
@@ -433,7 +433,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 2 — Sample Project
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Create the synthetic `sample-project/` Node.js app with intentional, detectable issues as specified in the Issues table above. This project must be runnable and its tests must include one deliberate failure.
 
@@ -457,7 +457,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 3 — Backend Foundation
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Set up the Express server, in-memory store, shared data models, and all API route stubs that return sensible empty responses. The server must start cleanly before any analysis logic is added.
 
@@ -482,7 +482,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 4 — Analysis Engine Orchestrator
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Implement the orchestrator that runs analysis modules sequentially (with timing), the aggregator, severity ranker, action plan builder, and report builder. Wire these to the API routes. Module implementations are stubs that return empty findings arrays — this makes the full pipeline testable before module logic is written.
 
@@ -508,7 +508,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 5 — Analysis Modules Implementation
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Implement all five analysis modules. Each module receives the validated project path and returns an array of Finding objects. Modules are independent files; they should not call each other.
 
@@ -530,7 +530,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 6 — Remediation Module
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Implement the safe remediator with the four allowlisted operations. Wire to the remediation API route. After a fix is applied, the affected finding's status must be updated to 'fixed' in the store.
 
@@ -551,7 +551,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 7 — Frontend Foundation
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Scaffold the React + Vite frontend with routing, API client, layout components, and CSS design tokens. All pages are stubs that render their title. The dev server must start and proxy API calls to the backend.
 
@@ -576,7 +576,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 8 — Frontend Pages Implementation
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Implement all five frontend pages with real data fetching, state management, and full UI. The Before/After panel is critical for the hackathon demo. Timing data must come from actual API responses only.
 
@@ -599,7 +599,7 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 ---
 
 ### Sub-Task 9 — Documentation Completion and Final Validation
-**Status:** [ ] pending
+**Status:** [x] done
 
 **Intent:** Complete all documentation (README, WORKFLOW.md, DEMO.md, AGENTS.md). Run full end-to-end validation. Fix any errors found.
 
@@ -646,3 +646,69 @@ The synthetic sample project `sample-project/` is a minimal "Items API" (an Expr
 | User authentication | | ✅ |
 | Automated UI tests | | ✅ |
 | CI/CD integration | | ✅ |
+
+---
+
+## Validation Evidence
+
+Recorded so that claims in the README can be checked rather than taken on
+trust. Every figure below was produced by actually running the commands on
+Windows, Node 26, against `sample-project/` on 2026-09-26.
+
+### What was run
+
+| Check | Command | Result |
+|---|---|---|
+| Backend unit tests | `npm test` | 9 passed, 0 failed |
+| Frontend production build | `npm run build` | Succeeded — 40 modules transformed |
+| Sample project tests | `npm --prefix sample-project test` | 4 passed, **1 intentional failure** |
+| Server boot + health | `GET /api/health` | `{"status":"ok","service":"devflow-ai-backend",...}` |
+| Projects endpoint | `GET /api/projects` | Returns the `items-api` entry |
+| End-to-end analysis | `POST /api/analysis/start` → poll → findings → action-plan → report | Completed successfully |
+| Dependency install | `npm run install:all` | Exit 0, all four packages |
+| Secret / large-file scan | `git grep` + file size audit | No secrets, no files over 1 MB, no `node_modules` staged |
+
+### End-to-end analysis output
+
+One full run against the sample project produced:
+
+- **21 findings**, spanning all five categories: code health 7, configuration
+  5, test health 4, documentation 4, build/release 1
+- **11 prioritised action plan items**, 4 of them marked `automated`
+- A report containing `analysisId`, `generatedAt`, `runNumber`, `overallStatus`,
+  `scoreSummary`, `categoryResults`, `beforeAfter`, `workflowTimeline`
+
+This exceeds the 13 seeded issues the plan targeted, because several checks
+report per-file or per-category detail rather than one finding per seeded issue.
+
+### Timing — before and after the Windows npm fix
+
+Workflow timings are recorded by the orchestrator with `Date.now()`. Before the
+`npm.cmd` fix, no npm command ever executed, so the reported durations were
+meaningless:
+
+| Measurement | Before fix | After fix |
+|---|---|---|
+| Total workflow | 62 ms | 4298 ms |
+| `test-health` module | 13 ms | 1196 ms |
+| `build-release` module | 6 ms | 3066 ms |
+
+Before the fix the orchestrator also emitted two **false** critical findings —
+"npm install failed" and "Test suite has failures" — because `execFile`
+returned `ENOENT` for `npm`. After the fix, the false install finding is gone
+and build/release correctly reports the sample project's genuine seeded test
+failure.
+
+### Not yet verified
+
+These are claimed by the sub-task status list above but have not been
+independently confirmed:
+
+- Applying each of the four remediations and observing the affected finding
+  change to `fixed`
+- Re-analysis showing a reduced finding count versus its parent run
+- The report's before/after comparison populated from a real parent session
+- A visual pass over the five frontend pages in a browser (the production build
+  compiles, but rendering and live polling have not been confirmed)
+- The `DEP0190` warning appears in the backend console on every analysis run —
+  expected, and documented rather than suppressed

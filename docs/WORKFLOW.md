@@ -62,7 +62,7 @@ Scans all `.js` source files for:
 
 - Discovers test files in `tests/` or `__tests__/` directories
 - Identifies source files with no corresponding test file
-- Runs `npm test` via `child_process.execFile` (allowlisted command)
+- Runs `npm test` (allowlisted command, fixed argument array)
 - Parses test output for pass/fail/error counts
 
 ### 3. Documentation
