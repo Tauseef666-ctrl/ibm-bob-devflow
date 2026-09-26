@@ -249,3 +249,20 @@ code, pre {
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+/* ── Premium animations ──────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  0%   { opacity: 0; transform: translateY(25px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+body {
+  animation: fadeUp 0.8s ease-out;
+}
+
+button, .card {
+  transition: all 0.3s ease !important;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-3px) scale(1.05) !important;
+}

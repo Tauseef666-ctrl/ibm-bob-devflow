@@ -14,6 +14,25 @@ const CATEGORIES = [
 
 const SEVERITIES = ['all', 'critical', 'high', 'medium', 'low', 'info'];
 
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
+
+function IconCheck({ size = 28 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="4,14 11,21 24,7" />
+    </svg>
+  );
+}
+function IconX({ size = 14 }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="7" cy="7" r="6" />
+      <line x1="4.5" y1="4.5" x2="9.5" y2="9.5" />
+      <line x1="9.5" y1="4.5" x2="4.5" y2="9.5" />
+    </svg>
+  );
+}
+
 export function FindingsPage({ sessionId }) {
   const navigate = useNavigate();
   const [findings, setFindings] = useState([]);
@@ -66,18 +85,20 @@ export function FindingsPage({ sessionId }) {
 
   return (
     <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-6)' }}>
+      {/* Header — flex-wrap so buttons stack on mobile */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 'var(--space-6)' }}>
         <div>
-          <h1 style={{ fontSize: 'var(--font-size-xl)', fontWeight: 700, marginBottom: 4 }}>Findings</h1>
-          <p style={{ color: 'var(--color-text-muted)', fontSize: 'var(--font-size-sm)' }}>
-            {findings.length} findings detected · {counts.fixed} fixed
+          <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>Findings</h1>
+          <p style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
+            {findings.length} finding{findings.length !== 1 ? 's' : ''} detected
+            {counts.fixed > 0 && <> · <span style={{ color: 'var(--color-pass)' }}>{counts.fixed} fixed</span></>}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
-          <button className="btn-secondary" onClick={() => navigate(`/analysis/${sessionId}/action-plan`)}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn-secondary" style={{ fontSize: 13 }} onClick={() => navigate(`/analysis/${sessionId}/action-plan`)}>
             Action Plan →
           </button>
-          <button className="btn-secondary" onClick={() => navigate(`/analysis/${sessionId}/report`)}>
+          <button className="btn-secondary" style={{ fontSize: 13 }} onClick={() => navigate(`/analysis/${sessionId}/report`)}>
             Report →
           </button>
         </div>
@@ -134,32 +155,69 @@ export function FindingsPage({ sessionId }) {
         })}
       </div>
 
-      {/* Severity filter */}
-      <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
-        {SEVERITIES.map(sev => (
-          <button
-            key={sev}
-            onClick={() => setActiveSeverity(sev)}
-            className={activeSeverity === sev ? 'btn-primary' : 'btn-secondary'}
-            style={{ fontSize: 'var(--font-size-xs)', padding: '3px 10px', textTransform: 'capitalize' }}
-          >
-            {sev}
-          </button>
-        ))}
+      {/* Severity filter — with count per severity */}
+      <div style={{ display: 'flex', gap: 6, marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
+        {SEVERITIES.map(sev => {
+          const cnt = sev === 'all' ? findings.length : (counts[sev] ?? 0);
+          const active = activeSeverity === sev;
+          return (
+            <button
+              key={sev}
+              onClick={() => setActiveSeverity(sev)}
+              style={{
+                fontSize: 12, fontWeight: 600, padding: '4px 12px', borderRadius: 20,
+                border: `1px solid ${active ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                background: active ? 'var(--color-accent)' : 'var(--color-surface)',
+                color: active ? '#fff' : 'var(--color-text-muted)',
+                cursor: 'pointer', transition: 'all 0.12s',
+                textTransform: sev === 'all' ? 'none' : 'capitalize',
+              }}
+            >
+              {sev === 'all' ? 'All' : sev} ({cnt})
+            </button>
+          );
+        })}
       </div>
 
+      {/* Error state — structured */}
       {error && (
-        <div style={{ color: 'var(--color-critical)', padding: 'var(--space-4)', background: 'var(--color-critical-bg)', borderRadius: 'var(--radius)', marginBottom: 'var(--space-4)' }}>
-          {error}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16,
+          background: 'var(--color-critical-bg)', border: '1px solid var(--color-critical-border)',
+          borderRadius: 'var(--radius)', padding: '12px 14px',
+        }}>
+          <IconX size={14} />
+          <div>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-critical)' }}>Failed to load findings</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{error}</div>
+          </div>
         </div>
       )}
 
       {loading ? (
-        <p style={{ color: 'var(--color-text-muted)' }}>Loading findings…</p>
+        /* Loading state — spinner */
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--color-text-muted)', fontSize: 13, padding: '24px 0' }}>
+          <span className="spinner" />
+          Loading findings…
+        </div>
       ) : filtered.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: 'var(--space-12)', color: 'var(--color-text-muted)' }}>
-          <div style={{ fontSize: 32, marginBottom: 'var(--space-3)' }}>✓</div>
-          <p>No findings match the current filter.</p>
+        /* Empty state — SVG icon, no emoji */
+        <div style={{
+          textAlign: 'center', padding: '48px 24px',
+          background: 'var(--color-surface)', border: '1px dashed var(--color-border)',
+          borderRadius: 'var(--radius-lg)', color: 'var(--color-text-muted)',
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10, color: 'var(--color-pass)' }}>
+            <IconCheck size={32} />
+          </div>
+          <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 4, color: 'var(--color-pass)' }}>
+            {findings.length === 0 ? 'No findings detected' : 'No findings match this filter'}
+          </div>
+          <p style={{ fontSize: 13 }}>
+            {findings.length === 0
+              ? 'The project looks clean!'
+              : 'Try a different category or severity filter.'}
+          </p>
         </div>
       ) : (
         <div>

@@ -54,7 +54,10 @@ export function FindingCard({ finding, onRemediate, remediating }) {
             </div>
           )}
         </div>
-        <span style={{ color: 'var(--color-text-subtle)', fontSize: 13, flexShrink: 0, marginTop: 2 }}>
+        <span
+          aria-label={expanded ? 'Collapse details' : 'Expand details'}
+          style={{ color: 'var(--color-text-subtle)', fontSize: 13, flexShrink: 0, marginTop: 2 }}
+        >
           {expanded ? '▲' : '▼'}
         </span>
       </div>
@@ -96,11 +99,21 @@ export function FindingCard({ finding, onRemediate, remediating }) {
           {finding.remediable && !isFixed && (
             <button
               className="btn-primary"
+              aria-label={remediating ? 'Applying auto-fix…' : 'Apply auto-fix for this finding'}
               onClick={(e) => { e.stopPropagation(); onRemediate(finding); }}
               disabled={remediating}
-              style={{ marginTop: 'var(--space-2)' }}
+              style={{ marginTop: 'var(--space-2)', display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}
             >
-              {remediating ? 'Applying fix…' : '⚡ Apply Auto-Fix'}
+              {remediating ? (
+                <><span className="spinner" style={{ width: 11, height: 11, borderWidth: 2 }} /> Applying fix…</>
+              ) : (
+                <>
+                  <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <polyline points="8,1 4,7 7,7 6,13 10,7 7,7 8,1" />
+                  </svg>
+                  Apply Auto-Fix
+                </>
+              )}
             </button>
           )}
         </div>
