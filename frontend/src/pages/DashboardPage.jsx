@@ -256,13 +256,17 @@ export function DashboardPage({ onSessionStart }) {
   const [loadingSession, setLoadingSession] = useState(false);
   const [starting, setStarting]         = useState(null);  // projectId being started
 
-  // Load projects on mount
-  useEffect(() => {
+  // Load projects — with retry capability
+  const fetchProjects = useCallback(() => {
+    setLoadingProjects(true);
+    setProjectError(null);
     api.listProjects()
       .then(setProjects)
-      .catch(() => setProjectError('Cannot reach backend on port 3001. Is the server running?'))
+      .catch(() => setProjectError('Cannot reach the backend on port 3001.'))
       .finally(() => setLoadingProjects(false));
   }, []);
+
+  useEffect(() => { fetchProjects(); }, [fetchProjects]);
 
   // Load last session data if we have a stored sessionId
   const loadLastSession = useCallback(async (sessionId) => {
