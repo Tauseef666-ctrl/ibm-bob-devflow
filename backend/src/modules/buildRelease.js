@@ -5,10 +5,10 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFile } = require('child_process');
+const { exec } = require('child_process');
 const { v4: uuidv4 } = require('uuid');
 
-// On Windows, npm must be called as npm.cmd
+// On Windows, npm must be invoked via shell. Use exec with hardcoded allowlist commands.
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const MAX_EVIDENCE = 200;
@@ -136,12 +136,12 @@ async function analyze(projectPath) {
 
 function runCommand(cmd, args, cwd, timeout) {
   const start = Date.now();
+  // cmd and args are from a hardcoded allowlist — not user input.
+  const command = [cmd, ...args].join(' ');
   return new Promise((resolve) => {
-    // shell:true required on Windows for .cmd scripts
-    execFile(cmd, args, {
+    exec(command, {
       cwd,
       timeout,
-      shell: true,
       env: { ...process.env, CI: 'true' },
     }, (error, stdout, stderr) => {
       resolve({

@@ -132,13 +132,13 @@ function collectJsFiles(dir) {
 }
 
 function runNpmTest(projectPath) {
+  const { exec } = require('child_process');
   return new Promise((resolve) => {
-    // Allowlisted command: npm test
-    // shell:true required on Windows for .cmd scripts
-    execFile(NPM, ['test'], {
+    // Use exec (shell) because npm.cmd requires shell on Windows.
+    // Command is from a hardcoded allowlist — not user input.
+    exec(`${NPM} test`, {
       cwd: projectPath,
       timeout: 30000,
-      shell: true,
       env: { ...process.env, CI: 'true' },
     }, (error, stdout, stderr) => {
       resolve({
