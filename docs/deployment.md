@@ -98,8 +98,17 @@ filesystem and a working `npm`.
 ## Deploying the frontend on its own
 
 If you want the UI on Vercel even though the API cannot run there, deploy
-`frontend/` as a separate project. Use these settings, which differ from the
-combined deployment above:
+`frontend/` as a separate project. Two files in this repository make that work:
+
+- `frontend/vercel.json` — pins `npm run build`, `dist` as the output
+  directory, and the SPA fallback rewrite. Vercel reads `vercel.json` from the
+  Root Directory, so with Root Directory set to `frontend` this is the file it
+  finds. The root `vercel.json` is invisible in that setup.
+- `frontend/package.json` defines `vercel-build` as an alias of `build`, so the
+  project also builds if the dashboard Build Command is left as
+  `npm run vercel-build`.
+
+Settings:
 
 | Setting | Value |
 |---|---|
@@ -109,11 +118,15 @@ combined deployment above:
 | Install Command | leave the default |
 
 `npm run vercel-build` is a **root-level** script for the combined deployment.
-`frontend/package.json` defines only `dev`, `build` and `preview`, so a
-frontend-rooted project must use `npm run build`, which runs `vite build` and
-emits `frontend/dist`. Asking for `vercel-build` there fails with
-`Missing script: "vercel-build"` — a misleading message, since the script does
-exist, just in a different `package.json`.
+`frontend/package.json` originally defined only `dev`, `build` and `preview`, so
+a frontend-rooted project asking for `vercel-build` failed with
+`Missing script: "vercel-build"` — a misleading message, since the script did
+exist, just in a different `package.json`. The alias above removes that failure
+mode.
+
+Note the Output Directory changes with the Root Directory. It is `dist` for a
+frontend-rooted project, not `frontend/dist`, which is the value the root
+`vercel.json` uses.
 
 Set `VITE_API_URL` on the frontend project to the API origin. Vite inlines
 `VITE_*` variables at build time, so changing it requires a rebuild. The
@@ -126,8 +139,10 @@ A build may also print a warning like:
 npm warn install-scripts  esbuild@0.21.5 (postinstall: node install.js)
 ```
 
-That is benign. esbuild resolves its platform binary through an optional
-dependency, not the postinstall, and the warning does not fail the build.
+That is benign, and it confirms the failing project is the frontend one, since
+esbuild arrives as a Vite dependency. esbuild resolves its platform binary
+through an optional dependency rather than the postinstall, so the warning does
+not fail the build.
 
 Without a reachable API the deployed SPA renders its error state, so this is a
 UI preview only.

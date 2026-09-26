@@ -34,6 +34,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Frontend deployable on its own** — `frontend/vercel.json` pins `npm run
+  build`, a `dist` output directory and the SPA fallback rewrite for a project
+  whose Root Directory is `frontend`, and `frontend/package.json` gains a
+  `vercel-build` alias of `build`. A frontend-rooted Vercel project previously
+  failed with `Missing script: "vercel-build"`, because that script only existed
+  in the root `package.json`. See `docs/deployment.md`. The API still cannot run
+  there; this is a UI shell only.
 - `uuid` upgraded from v9 to v14 in the backend. The CommonJS
   `require('uuid')` call style is unaffected; verified that all backend modules
   still load and the test suite still passes.
