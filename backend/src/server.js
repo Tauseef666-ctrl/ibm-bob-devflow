@@ -9,7 +9,22 @@ const remediationRouter = require('./routes/remediation');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173'] }));
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  // Vercel deployment — set FRONTEND_URL env var on the Vercel backend project
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
+app.use(cors({
+  origin: (origin, cb) => {
+    // Allow requests with no origin (curl, Postman, server-to-server)
+    if (!origin) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    cb(new Error(`CORS: origin ${origin} not allowed`));
+  },
+  credentials: true,
+}));
 app.use(express.json());
 
 // Health check

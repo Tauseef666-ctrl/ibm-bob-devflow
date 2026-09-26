@@ -1,8 +1,12 @@
 /**
  * API client — all backend fetch helpers.
+ *
+ * In development (Vite proxy): BASE = '/api'  → proxied to localhost:3001
+ * In production (Vercel):      BASE = '/api'  → routed to serverless function
+ * Override with VITE_API_URL env var if backend is deployed separately.
  */
 
-const BASE = '/api';
+const BASE = (import.meta.env.VITE_API_URL || '') + '/api';
 
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, {
