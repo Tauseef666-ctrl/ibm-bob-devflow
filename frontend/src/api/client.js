@@ -1,12 +1,20 @@
 /**
  * API client — all backend fetch helpers.
  *
- * In development (Vite proxy): BASE = '/api'  → proxied to localhost:3001
- * In production (Vercel):      BASE = '/api'  → routed to serverless function
- * Override with VITE_API_URL env var if backend is deployed separately.
+ * Resolution order:
+ *   1. VITE_API_URL, if set          → absolute origin, e.g. https://api.example.com
+ *   2. same origin, relative '/api'  → combined deployment, or a frontend that
+ *                                      sits behind the same domain as the API
+ *
+ * In development Vite proxies '/api' to localhost:3001 (see vite.config.js), so
+ * case 2 covers local dev with no configuration.
+ *
+ * VITE_API_URL is inlined at BUILD time, not read at runtime, so changing it
+ * requires a rebuild rather than just a redeploy of the function.
  */
 
-const BASE = (import.meta.env.VITE_API_URL || '') + '/api';
+const configured = (import.meta.env.VITE_API_URL || '').replace(/\/+$/, '');
+const BASE = `${configured}/api`;
 
 async function fetchJSON(url, options = {}) {
   const res = await fetch(url, {

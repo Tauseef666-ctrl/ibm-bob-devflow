@@ -3,6 +3,27 @@
 DevFlow AI deploys to Vercel as a single project that serves both the React SPA
 and the Express API from one origin, so production needs no CORS preflight.
 
+## Verify a live deployment
+
+```bash
+# the SPA is served
+curl -s -o /dev/null -w '%{http_code}\n' https://<your-domain>/
+
+# the API shell responds (both are expected to work on Vercel)
+curl -s https://<your-domain>/api/health
+curl -s https://<your-domain>/api/projects
+```
+
+A 404 on `/api/health` means the function did not build or the `/api/*` route
+is missing, not that the API is disabled. Check the three command fields in
+[Required project settings](#required-project-settings) before suspecting the
+code.
+
+Starting an analysis returns an error on Vercel. That is expected and is
+documented in
+[The analysis API cannot run on Vercel](#the-analysis-api-cannot-run-on-vercel)
+— a deliberate design limit, not a misconfiguration. The demo runs locally.
+
 ## How it fits together
 
 | Piece | Location | Role |
@@ -24,9 +45,25 @@ Set these in **Vercel → your project → Settings → Build & Development Sett
 |---|---|---|
 | **Root Directory** | *leave empty* (repo root) | See below — this is the setting people get wrong |
 | Framework Preset | `Other` | Set by `"framework": null` in `vercel.json` |
-| Build Command | `npm run vercel-build` | From `vercel.json`; shown for reference only |
-| Output Directory | `frontend/dist` | From `vercel.json`; shown for reference only |
-| Install Command | `npm install` | From `vercel.json`; shown for reference only |
+| Build Command | `npm run vercel-build` | Must match `vercel.json` exactly |
+| Output Directory | `frontend/dist` | Must match `vercel.json` exactly |
+| Install Command | `npm run install:all` | Must match `vercel.json` exactly |
+
+**Every one of these three command fields must be set on the dashboard, or the
+build fails.** `vercel.json` supplies the values, but a project created in the
+dashboard keeps its own copy, and the dashboard value wins when the two
+disagree. A field left at its default produces a failure that names the wrong
+thing, so check all three after any settings change:
+
+| Dashboard field left at default | Result |
+|---|---|
+| Install Command = `npm install` | Only root `devDependencies` install, so `backend/node_modules` never exists and `api/index.js` cannot resolve `express`. Fails at output directory or at runtime with `Cannot find module 'express'`. |
+| Build Command = `npm run build` or empty | Root `build` does not install the other three packages, so Vite cannot resolve `react` and no `frontend/dist` is produced. Fails with `No entrypoint found in output directory`. |
+| Output Directory = `frontend/dist` on a function-only project | Vercel searches static output for an entrypoint and fails. Leave it **empty** for a backend-rooted project. |
+
+Note the Install Command is `npm run install:all`, not `npm install`. The root
+`package.json` has only `concurrently` as a dependency, so a bare `npm install`
+provisions nothing the API needs.
 
 These settings produce a *building* deployment. They do not produce a *working
 analysis API* — see [The analysis API cannot run on Vercel](#the-analysis-api-cannot-run-on-vercel)
