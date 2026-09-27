@@ -22,9 +22,16 @@ export function FindingCard({ finding, onRemediate, remediating }) {
         marginBottom: 'var(--space-3)',
       }}
     >
-      <div
-        style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', cursor: 'pointer' }}
+      {/* A11Y-003: use <button> so the expand toggle is keyboard-reachable */}
+      <button
+        aria-expanded={expanded}
+        aria-controls={`finding-detail-${finding.id}`}
         onClick={() => setExpanded(e => !e)}
+        style={{
+          display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)',
+          cursor: 'pointer', width: '100%', textAlign: 'left',
+          background: 'none', border: 'none', padding: 0, borderRadius: 0,
+        }}
       >
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', flexWrap: 'wrap', marginBottom: 4 }}>
@@ -55,15 +62,15 @@ export function FindingCard({ finding, onRemediate, remediating }) {
           )}
         </div>
         <span
-          aria-label={expanded ? 'Collapse details' : 'Expand details'}
+          aria-hidden="true"
           style={{ color: 'var(--color-text-subtle)', fontSize: 13, flexShrink: 0, marginTop: 2 }}
         >
           {expanded ? '▲' : '▼'}
         </span>
-      </div>
+      </button>
 
       {expanded && (
-        <div style={{ marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
+        <div id={`finding-detail-${finding.id}`} style={{ marginTop: 'var(--space-4)', borderTop: '1px solid var(--color-border)', paddingTop: 'var(--space-4)' }}>
           <div style={{ marginBottom: 'var(--space-3)' }}>
             <div style={{ fontSize: 'var(--font-size-xs)', fontWeight: 700, color: 'var(--color-text-subtle)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
               Explanation

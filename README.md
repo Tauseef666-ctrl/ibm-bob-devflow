@@ -317,6 +317,10 @@ records in [`bob_sessions/`](bob_sessions/).
 | [`docs/WORKFLOW.md`](docs/WORKFLOW.md) | The analysis pipeline and what each module checks |
 | [`docs/DEMO.md`](docs/DEMO.md) | Step-by-step demo script with talking points |
 | [`docs/devflow-plan.md`](docs/devflow-plan.md) | Bob plan-mode plan, sub-task status, and validation evidence |
+| [`docs/qa.md`](docs/qa.md) | QA findings, verification sign-off, and before/after measurements |
+| [`docs/sample-project-issues.md`](docs/sample-project-issues.md) | The 21 seeded issues in the analysis target, mapped to DevFlow's findings |
+| [`bob_sessions/README.md`](bob_sessions/README.md) | Bob session screenshots, indexed per member |
+| [`bob_sessions/evidence-inventory.md`](bob_sessions/evidence-inventory.md) | Every Bob session performed, cross-referenced to sub-tasks and commits |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Branching, commit and PR conventions |
 | [`CHANGELOG.md`](CHANGELOG.md) | Release history |
 | [`AGENTS.md`](AGENTS.md) | Persistent project context for IBM Bob |

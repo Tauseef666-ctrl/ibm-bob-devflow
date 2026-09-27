@@ -19,30 +19,30 @@ backend and documentation.
 
 ## Tauseef — team lead
 
-| Shot | File | Resolution |
-|---|---|---|
-| 01 | [`tauseef-01.jpg`](tauseef-khan-lead/tauseef-01.jpg) | 1600×850 |
-| 02 | [`tauseef-02.jpg`](tauseef-khan-lead/tauseef-02.jpg) | 1600×900 |
-| 03 | [`tauseef-03.jpg`](tauseef-khan-lead/tauseef-03.jpg) | 1600×900 |
-| 04 | [`tauseef-04.jpg`](tauseef-khan-lead/tauseef-04.jpg) | 1600×900 |
-| 05 | [`tauseef-05.jpg`](tauseef-khan-lead/tauseef-05.jpg) | 1600×900 |
+| Shot | File | Resolution | Session |
+|---|---|---|---|
+| 01 | [`tauseef-01.jpg`](tauseef-khan-lead/tauseef-01.jpg) | 1600×850 | Planning & architecture (Plan mode, 9-sub-task plan) |
+| 02 | [`tauseef-02.jpg`](tauseef-khan-lead/tauseef-02.jpg) | 1600×900 | Backend foundation + analysis engine (Sub-Tasks 1–4) |
+| 03 | [`tauseef-03.jpg`](tauseef-khan-lead/tauseef-03.jpg) | 1600×900 | Five analysis modules + sample project (Sub-Tasks 2, 5) |
+| 04 | [`tauseef-04.jpg`](tauseef-khan-lead/tauseef-04.jpg) | 1600×900 | Windows npm fix + engine refactor (Sub-Task 9 debugging) |
+| 05 | [`tauseef-05.jpg`](tauseef-khan-lead/tauseef-05.jpg) | 1600×900 | Documentation, integration & final validation (Sub-Task 9) |
 
 ## Hifza Irfan — frontend / UI
 
-| Shot | File | Resolution |
-|---|---|---|
-| 01 | [`hifza-01.jpg`](hifza-irfan-frontend/hifza-01.jpg) | 1600×900 |
-| 02 | [`hifza-02.jpg`](hifza-irfan-frontend/hifza-02.jpg) | 468×1020 |
-| 03 | [`hifza-03.jpg`](hifza-irfan-frontend/hifza-03.jpg) | 457×873 |
-| 04 | [`hifza-04.jpg`](hifza-irfan-frontend/hifza-04.jpg) | 1600×900 |
+| Shot | File | Resolution | Session |
+|---|---|---|---|
+| 01 | [`hifza-01.jpg`](hifza-irfan-frontend/hifza-01.jpg) | 1600×900 | Frontend foundation (Sub-Task 7) |
+| 02 | [`hifza-02.jpg`](hifza-irfan-frontend/hifza-02.jpg) | 468×1020 | Frontend pages (Sub-Task 8) |
+| 03 | [`hifza-03.jpg`](hifza-irfan-frontend/hifza-03.jpg) | 457×873 | Frontend pages, continued (Sub-Task 8) |
+| 04 | [`hifza-04.jpg`](hifza-irfan-frontend/hifza-04.jpg) | 1600×900 | Frontend pages, final pass (Sub-Task 8) |
 
 ## Hamza Masood — sample project / QA / docs
 
-| Shot | File | Resolution |
-|---|---|---|
-| 01 | [`hamza-01.jpg`](hamza-masood-sample-qa-docs/hamza-01.jpg) | 1600×900 |
-| 02 | [`hamza-02.jpg`](hamza-masood-sample-qa-docs/hamza-02.jpg) | 1600×900 |
-| 03 | [`hamza-03.jpg`](hamza-masood-sample-qa-docs/hamza-03.jpg) | 1600×900 |
+| Shot | File | Resolution | Session |
+|---|---|---|---|
+| 01 | [`hamza-01.jpg`](hamza-masood-sample-qa-docs/hamza-01.jpg) | 1600×900 | Sample project QA & demo validation |
+| 02 | [`hamza-02.jpg`](hamza-masood-sample-qa-docs/hamza-02.jpg) | 1600×900 | Sample project QA & demo validation, continued |
+| 03 | [`hamza-03.jpg`](hamza-masood-sample-qa-docs/hamza-03.jpg) | 1600×900 | Sample project QA & demo validation, final pass |
 
 ## Original filenames
 
@@ -64,26 +64,28 @@ same order, are:
 | hamza-02 | `IMG-20260927-WA0024.jpg` |
 | hamza-03 | `IMG-20260927-WA0025.jpg` |
 
-## Adding captions
+## Session labels
 
-The tables above record what can be verified without opening the files:
-identity, capture order and pixel dimensions. They deliberately carry **no
-description of what each screenshot shows**, because the screenshots were
-filed by their authors and not reviewed when the index was written.
+The Session column names the work each shot covers, so a shot can be checked
+against `docs/devflow-plan.md` and the commit history rather than trusted
+blind. It is taken from
+[`evidence-inventory.md`](evidence-inventory.md), which cross-references each
+session to the sub-task log and the commits that resulted.
 
-Whoever took a session should add a one-line caption to its row, e.g.
+Where the inventory was more granular than a screenshot count, several shots
+carry the same session. That is accurate rather than padding: the folder holds
+12 screenshots across 10 distinct sessions, and the two extra shots are
+continuation captures of Hifza's Sub-Task 8 session.
+
+Captions are still worth adding per shot, e.g.
 
 ```markdown
-| 01 | [`tauseef-01.jpg`](tauseef-khan-lead/tauseef-01.jpg) | 1600×850 | Plan mode: architecture for all 5 modules |
+| 01 | [`tauseef-01.jpg`](tauseef-khan-lead/tauseef-01.jpg) | 1600×850 | Planning & architecture (Plan mode, 9-sub-task plan) |
 ```
 
-Captions are worth adding for two specific reasons. `docs/devflow-plan.md`
-records that Sub-Task 1 planned the architecture and that Sub-Tasks 8 and 9 ran
-parallel subagent reviews; a caption tying a shot to a sub-task number turns
-the folder from a pile of images into something a judge can check against the
-plan. And the frontend and backend review subagents are the clearest
-demonstration of parallel agent usage, which is a judging criterion, so those
-shots benefit most from being labelled.
+The two highest-value shots to caption precisely are the parallel frontend and
+backend review subagents from Sub-Tasks 8 and 9, since parallel agent usage is
+a judging criterion and a judge will look for it.
 
 ## Note on `hifza-02` and `hifza-03`
 

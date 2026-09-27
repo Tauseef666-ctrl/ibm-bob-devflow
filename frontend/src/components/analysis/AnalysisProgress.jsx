@@ -1,3 +1,12 @@
+/**
+ * Not currently mounted. pages/AnalysisPage.jsx renders its own inline
+ * ModuleRow and progress computation, and that is where the visible timer
+ * lives. This file is kept as the extracted component for a follow-up cleanup
+ * that mounts it and deletes the inline duplicate in AnalysisPage.
+ *
+ * Note: any timer fix must be applied to AnalysisPage.jsx, not here, or it
+ * will have no effect on the UI.
+ */
 import React, { useEffect, useState } from 'react';
 
 const MODULE_LABELS = {
