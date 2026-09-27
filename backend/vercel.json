@@ -6,9 +6,6 @@
       "maxDuration": 30
     }
   },
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.js" }
-  ],
   "env": {
     "NODE_ENV": "production"
   }
