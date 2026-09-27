@@ -26,7 +26,7 @@ export class ErrorBoundary extends React.Component {
           padding: 'var(--space-8)',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: 40, marginBottom: 'var(--space-4)' }}>⚠️</div>
+          <div style={{ fontSize: 40, marginBottom: 'var(--space-4)' }} aria-hidden="true">⚠️</div>
           <h2 style={{ fontWeight: 700, marginBottom: 'var(--space-3)', color: 'var(--color-text)' }}>
             Something went wrong
           </h2>
@@ -35,7 +35,7 @@ export class ErrorBoundary extends React.Component {
           </p>
           <button
             className="btn-primary"
-            onClick={() => { this.setState({ hasError: false, error: null }); window.location.href = '/'; }}
+            onClick={() => { window.location.href = '/'; }}
           >
             Back to Dashboard
           </button>

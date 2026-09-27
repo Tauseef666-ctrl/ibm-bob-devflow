@@ -369,8 +369,14 @@ export function ActionPlanPage({ sessionId }) {
   async function handleRemediate(item) {
     setRemediating(item.id);
     try {
+      // Re-read findings rather than trusting the rendered list. The action
+      // plan is built once at analysis time, so a finding fixed in another tab
+      // or by a concurrent request can be stale here, and a stale `status`
+      // would let a fixed finding be remediated a second time.
+      const freshData = await api.getFindings(sessionId);
+      const freshFindings = freshData.findings || [];
       const remediable = (item.findingIds || [])
-        .map(id => findings.find(f => f.id === id))
+        .map(id => freshFindings.find(f => f.id === id))
         .filter(f => f && f.remediable && f.status !== 'fixed');
       for (const f of remediable) {
         await api.remediate(sessionId, f.remediationId, f.id);
@@ -382,6 +388,9 @@ export function ActionPlanPage({ sessionId }) {
           : `Auto-fix applied to ${remediable.length} findings`,
       );
     } catch (err) {
+      // Reload even on failure so the view reflects real backend state after
+      // a partial application.
+      await load();
       toast.error(`Remediation failed: ${err.message}`);
     } finally {
       setRemediating(null);
