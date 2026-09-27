@@ -2,7 +2,7 @@
  * Aggregator — deduplicates and consolidates findings from all modules.
  */
 
-const { v4: uuidv4 } = require('uuid');
+const { uuidv4 } = require('../ids');
 
 /**
  * Aggregate findings: deduplicate by (category, affectedFile, title) and

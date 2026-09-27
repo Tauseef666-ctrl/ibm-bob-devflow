@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { execFile } = require('child_process');
-const { v4: uuidv4 } = require('uuid');
+const { uuidv4 } = require('../ids');
 
 // On Windows, npm must be called as npm.cmd
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';

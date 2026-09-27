@@ -5,7 +5,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const { uuidv4 } = require('../ids');
 
 const MAX_EVIDENCE = 200;
 

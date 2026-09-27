@@ -2,7 +2,7 @@
  * Action Plan Builder — groups and prioritises findings into actionable plan items.
  */
 
-const { v4: uuidv4 } = require('uuid');
+const { uuidv4 } = require('../ids');
 const { SEVERITY_ORDER } = require('./severityRanker');
 
 /** Effort heuristics by category */

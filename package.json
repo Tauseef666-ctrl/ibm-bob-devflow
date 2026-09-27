@@ -14,11 +14,10 @@
     "test:backend": "npm --prefix backend test",
     "test:sample": "npm --prefix sample-project test"
   },
-  "comment:dependencies": "cors, express and uuid are hoisted here on purpose. api/index.js requires ../backend/src/server, and Vercel builds that function from the repository root. Node resolves those imports by walking up from backend/src, so backend/node_modules would work, but only if a root-level install had already created it. Declaring them at the root means a bare 'npm install' provisions the function even when the project's Install Command is left at its default. Versions match backend/package.json; keep the two in step.",
+  "comment:dependencies": "cors and express are hoisted here on purpose. api/index.js requires ../backend/src/server, and Vercel builds that function from the repository root. Node resolves those imports by walking up from backend/src, so backend/node_modules would work, but only if a root-level install had already created it. Declaring them at the root means a bare 'npm install' provisions the function even when the project's Install Command is left at its default. Versions match backend/package.json; keep the two in step. The backend used to also depend on uuid, which is ESM-only and therefore unloadable from CommonJS on Node older than 22.12; identifiers now come from node:crypto via backend/src/ids.js, so no ESM dependency is reachable from the function bundle.",
   "dependencies": {
     "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "uuid": "^14.0.2"
+    "express": "^4.18.2"
   },
   "devDependencies": {
     "concurrently": "^8.2.2"

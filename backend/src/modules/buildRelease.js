@@ -6,7 +6,7 @@
 const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
-const { v4: uuidv4 } = require('uuid');
+const { uuidv4 } = require('../ids');
 
 // On Windows, npm must be invoked via shell. Use exec with hardcoded allowlist commands.
 const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
