@@ -115,11 +115,11 @@ function WorkflowBanner() {
     }}>
       {WORKFLOW_STEPS.map((step, i) => (
         <React.Fragment key={step.key}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 74 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text)', textTransform: 'uppercase' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 74, flexShrink: 0 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.04em', color: 'var(--color-text)', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>
               {step.label}
             </span>
-            <span style={{ fontSize: 10, color: 'var(--color-text-subtle)', marginTop: 2 }}>{step.desc}</span>
+            <span style={{ fontSize: 10, color: 'var(--color-text-subtle)', marginTop: 2, whiteSpace: 'nowrap' }}>{step.desc}</span>
           </div>
           {i < WORKFLOW_STEPS.length - 1 && (
             <div style={{ flex: '1 0 18px', height: 1, background: 'var(--color-border)', margin: '0 4px', minWidth: 14 }} />
@@ -343,11 +343,13 @@ export function ActionPlanPage({ sessionId }) {
   const [findings, setFindings] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
+  const [actionError, setActionError] = useState(null);   // inline error for remediate/reanalyze
   const [remediating, setRemediating] = useState(null);
   const [reanalyzing, setReanalyzing] = useState(false);
   const [sevFilter, setSevFilter]     = useState('all');
 
   const load = useCallback(async () => {
+    setError(null);
     try {
       const [planData, findingsData] = await Promise.all([
         api.getActionPlan(sessionId),
@@ -366,16 +368,22 @@ export function ActionPlanPage({ sessionId }) {
 
   async function handleRemediate(item) {
     setRemediating(item.id);
+    setActionError(null);
     try {
+      // Re-fetch findings from current state to avoid stale status filter
+      const freshData = await api.getFindings(sessionId);
+      const freshFindings = freshData.findings || [];
       const remediable = (item.findingIds || [])
-        .map(id => findings.find(f => f.id === id))
+        .map(id => freshFindings.find(f => f.id === id))
         .filter(f => f && f.remediable && f.status !== 'fixed');
       for (const f of remediable) {
         await api.remediate(sessionId, f.remediationId, f.id);
       }
       await load();
     } catch (err) {
-      alert('Remediation failed: ' + err.message);
+      setActionError('Fix could not be applied: ' + err.message);
+      // Refresh UI to reflect actual backend state even after partial failure
+      await load();
     } finally {
       setRemediating(null);
     }
@@ -383,11 +391,12 @@ export function ActionPlanPage({ sessionId }) {
 
   async function handleReanalyze() {
     setReanalyzing(true);
+    setActionError(null);
     try {
       const { sessionId: newId } = await api.reanalyze(sessionId);
       navigate(`/analysis/${newId}`);
     } catch (err) {
-      alert('Re-analysis failed: ' + err.message);
+      setActionError('Re-analysis could not be started: ' + err.message);
       setReanalyzing(false);
     }
   }
@@ -439,7 +448,7 @@ export function ActionPlanPage({ sessionId }) {
       {/* ── Workflow banner ── */}
       <WorkflowBanner />
 
-      {/* ── Error ── */}
+      {/* ── Load error ── */}
       {error && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20,
@@ -447,10 +456,31 @@ export function ActionPlanPage({ sessionId }) {
           borderRadius: 'var(--radius)', padding: '12px 14px',
         }}>
           <IconX size={14} />
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-critical)' }}>Failed to load action plan</div>
             <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{error}</div>
           </div>
+          <button className="btn-secondary" style={{ fontSize: 12, flexShrink: 0 }} onClick={load}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* ── Action error (remediate / reanalyze) — inline, no alert() ── */}
+      {actionError && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20,
+          background: 'var(--color-high-bg)', border: '1px solid var(--color-high-border)',
+          borderRadius: 'var(--radius)', padding: '12px 14px',
+        }}>
+          <IconX size={14} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-high)' }}>Action failed</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{actionError}</div>
+          </div>
+          <button className="btn-secondary" style={{ fontSize: 12, flexShrink: 0 }} onClick={() => setActionError(null)}>
+            Dismiss
+          </button>
         </div>
       )}
 

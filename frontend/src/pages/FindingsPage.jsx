@@ -38,11 +38,13 @@ export function FindingsPage({ sessionId }) {
   const [findings, setFindings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [remediationError, setRemediationError] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeSeverity, setActiveSeverity] = useState('all');
   const [remediating, setRemediating] = useState(null);
 
   const loadFindings = useCallback(async () => {
+    setError(null);  // clear previous load error before each attempt
     try {
       const data = await api.getFindings(sessionId);
       setFindings(data.findings || []);
@@ -57,11 +59,12 @@ export function FindingsPage({ sessionId }) {
 
   async function handleRemediate(finding) {
     setRemediating(finding.id);
+    setRemediationError(null);
     try {
       await api.remediate(sessionId, finding.remediationId, finding.id);
       await loadFindings();
     } catch (err) {
-      alert('Remediation failed: ' + err.message);
+      setRemediationError('Remediation failed: ' + err.message);
     } finally {
       setRemediating(null);
     }
@@ -127,6 +130,7 @@ export function FindingsPage({ sessionId }) {
         borderBottom: '1px solid var(--color-border)',
         marginBottom: 'var(--space-5)',
         overflowX: 'auto',
+        WebkitOverflowScrolling: 'touch',  /* FE-026: iOS momentum scrolling */
       }}>
         {CATEGORIES.map(cat => {
           const catCount = cat.key === 'all'
@@ -179,7 +183,7 @@ export function FindingsPage({ sessionId }) {
         })}
       </div>
 
-      {/* Error state — structured */}
+      {/* Load error state */}
       {error && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16,
@@ -187,10 +191,39 @@ export function FindingsPage({ sessionId }) {
           borderRadius: 'var(--radius)', padding: '12px 14px',
         }}>
           <IconX size={14} />
-          <div>
+          <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-critical)' }}>Failed to load findings</div>
             <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{error}</div>
           </div>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 12, flexShrink: 0 }}
+            onClick={loadFindings}
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Remediation error — inline, no alert() */}
+      {remediationError && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16,
+          background: 'var(--color-high-bg)', border: '1px solid var(--color-high-border)',
+          borderRadius: 'var(--radius)', padding: '12px 14px',
+        }}>
+          <IconX size={14} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-high)' }}>Fix could not be applied</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{remediationError}</div>
+          </div>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 12, flexShrink: 0 }}
+            onClick={() => setRemediationError(null)}
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
