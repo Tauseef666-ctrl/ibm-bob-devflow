@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 
@@ -72,7 +72,7 @@ function IconRefresh({ size = 14 }) {
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatMs(ms) {
-  if (!ms) return '—';
+  if (ms === null || ms === undefined) return '—';
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(2)}s`;
 }
@@ -165,39 +165,100 @@ function ErrorState({ error, onBack }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
+const REPORT_POLL_INTERVAL = 2000;
+
 export function ReportPage({ sessionId }) {
   const navigate = useNavigate();
-  const [report, setReport]       = useState(null);
-  const [loading, setLoading]     = useState(true);
-  const [error, setError]         = useState(null);
+  const [report, setReport]           = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const [waiting, setWaiting]         = useState(false);  // analysis not yet complete
+  const [error, setError]             = useState(null);
+  const [reanalyzeError, setReanalyzeError] = useState(null);
   const [reanalyzing, setReanalyzing] = useState(false);
+  const pollRef = useRef(null);
 
   useEffect(() => {
-    api.getReport(sessionId)
-      .then(data => {
+    let cancelled = false;
+
+    async function fetchReport() {
+      try {
+        const data = await api.getReport(sessionId);
+        if (cancelled) return;
+
+        // Backend returns HTTP 202 { status, message } when not yet complete.
+        // fetchJSON treats 202 as success (res.ok === true), so we detect it by
+        // the presence of `data.status` (the 202 body) vs the completed report
+        // which uses `data.overallStatus`.
         if (data.status) {
-          setError('Analysis not yet complete. Status: ' + data.status);
+          // Analysis still running — switch to "waiting" mode and poll
+          setWaiting(true);
+          setLoading(false);
+          pollRef.current = setTimeout(fetchReport, REPORT_POLL_INTERVAL);
         } else {
           setReport(data);
+          setWaiting(false);
+          setLoading(false);
         }
-      })
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+      } catch (err) {
+        if (!cancelled) {
+          setError(err.message);
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchReport();
+    return () => {
+      cancelled = true;
+      clearTimeout(pollRef.current);
+    };
   }, [sessionId]);
 
   async function handleReanalyze() {
     setReanalyzing(true);
+    setReanalyzeError(null);
     try {
       const { sessionId: newId } = await api.reanalyze(sessionId);
       navigate(`/analysis/${newId}`);
     } catch (err) {
-      alert('Re-analysis failed: ' + err.message);
+      setReanalyzeError('Re-analysis could not be started: ' + err.message);
       setReanalyzing(false);
     }
   }
 
   if (loading) return <LoadingState />;
-  if (error)   return <ErrorState error={error} onBack={() => navigate(-1)} />;
+
+  // Analysis is still running — show a "waiting" state with auto-refresh
+  if (waiting) {
+    return (
+      <div style={{ maxWidth: 760, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+          padding: '14px 16px',
+          background: 'var(--color-accent-light)', border: '1px solid #bfdbfe',
+          borderRadius: 'var(--radius-lg)', marginBottom: 16,
+        }}>
+          <span className="spinner" style={{ flexShrink: 0, marginTop: 1 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-accent)' }}>Analysis in progress</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
+              The report will appear automatically when the analysis completes.
+            </div>
+          </div>
+          <button
+            className="btn-secondary"
+            style={{ fontSize: 12, flexShrink: 0 }}
+            onClick={() => navigate(`/analysis/${sessionId}`)}
+          >
+            View Progress →
+          </button>
+        </div>
+        <button className="btn-secondary" onClick={() => navigate(-1)} style={{ fontSize: 13 }}>← Back</button>
+      </div>
+    );
+  }
+
+  if (error) return <ErrorState error={error} onBack={() => navigate(-1)} />;
 
   const { scoreSummary, categoryResults, beforeAfter, workflowTimeline } = report;
   const overallCfg  = OVERALL_CONFIG[report.overallStatus] || OVERALL_CONFIG['needs-attention'];
@@ -239,6 +300,25 @@ export function ReportPage({ sessionId }) {
           )}
         </button>
       </div>
+
+      {/* ── Re-analyze error — inline, no alert() ── */}
+      {reanalyzeError && (
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 20,
+          padding: '12px 14px',
+          background: 'var(--color-high-bg)', border: '1px solid var(--color-high-border)',
+          borderRadius: 'var(--radius-lg)',
+        }}>
+          <IconWarn size={16} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--color-high)' }}>Re-analysis failed</div>
+            <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{reanalyzeError}</div>
+          </div>
+          <button className="btn-secondary" style={{ fontSize: 12, flexShrink: 0 }} onClick={() => setReanalyzeError(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* ── Hero: gauge + status banner ── */}
       <div style={{
