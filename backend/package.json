@@ -8,6 +8,7 @@
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
     "vercel-build": "node --check src/index.js && node --check src/server.js && node --check api/index.js",
+    "build": "npm run vercel-build",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
