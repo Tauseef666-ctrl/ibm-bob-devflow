@@ -190,7 +190,8 @@ DevFlow AI was built using IBM Bob 2.0 as the core development workflow componen
 | **Parallel subagents** | Frontend review, backend review, and documentation review run as independent parallel subagents in Sub-Tasks 8 and 9 |
 | **Document understanding** | DevFlow's own Documentation module reads and analyses Markdown files from the sample project — the same Bob capability used for project understanding |
 
-Bob session consumption summaries are in [`bob_sessions/`](bob_sessions/).
+Bob session consumption summaries are in [`bob_sessions/`](bob_sessions/),
+indexed per member in [`bob_sessions/README.md`](bob_sessions/README.md).
 
 ## Measurable Impact Methodology
 
