@@ -9,12 +9,18 @@ const remediationRouter = require('./routes/remediation');
 const app = express();
 
 // Middleware
+// FRONTEND_URL accepts a comma-separated list so the standalone Vercel frontend
+// and the combined single-origin deployment can both be allowed. A single
+// allowed origin returned 500 rather than a CORS rejection when the other
+// frontend called the API, because the cors callback rejects with an error.
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
-  // Vercel deployment — set FRONTEND_URL env var on the Vercel backend project
-  process.env.FRONTEND_URL,
-].filter(Boolean);
+  ...(process.env.FRONTEND_URL || '')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean),
+];
 
 app.use(cors({
   origin: (origin, cb) => {
