@@ -1,3 +1,8 @@
+/**
+ * @deprecated This component is not used anywhere in the application.
+ * AnalysisPage.jsx contains its own inline ModuleRow implementation.
+ * Retained for reference only — can be deleted in a future cleanup pass.
+ */
 import React from 'react';
 
 const MODULE_LABELS = {

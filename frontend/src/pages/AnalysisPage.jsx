@@ -235,16 +235,13 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
   const [session, setSession]   = useState(null);
   const [error, setError]       = useState(null);
   const [elapsed, setElapsed]   = useState(0);
-  const intervalRef  = useRef(null);
-  const timerRef     = useRef(null);
-  const startTimeRef = useRef(Date.now());
+  const intervalRef    = useRef(null);
+  const timerRef       = useRef(null);
+  const startTimeRef   = useRef(null);   // initialized from session.startedAt, not Date.now()
+  const autoNavRef     = useRef(null);   // tracks the auto-navigate setTimeout (FE-014)
 
   useEffect(() => {
     if (!sessionId) return;
-
-    timerRef.current = setInterval(() => {
-      setElapsed(Date.now() - startTimeRef.current);
-    }, 500);
 
     async function poll() {
       try {
@@ -252,10 +249,21 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
         setSession(data);
         onSessionStart && onSessionStart(sessionId);
 
+        // FE-005: initialize startTimeRef from the session's actual start time,
+        // not from when the component mounted, so back-navigation shows correct elapsed.
+        if (startTimeRef.current === null && data.startedAt) {
+          startTimeRef.current = data.startedAt;
+          // Start the elapsed timer only once we have the real start time
+          timerRef.current = setInterval(() => {
+            setElapsed(Date.now() - startTimeRef.current);
+          }, 500);
+        }
+
         if (data.status === 'completed') {
           clearInterval(intervalRef.current);
           clearInterval(timerRef.current);
-          setTimeout(() => navigate(`/analysis/${sessionId}/findings`), 1400);
+          // FE-014: track the timeout so we can cancel it if the user navigates manually
+          autoNavRef.current = setTimeout(() => navigate(`/analysis/${sessionId}/findings`), 1400);
         } else if (data.status === 'failed') {
           clearInterval(intervalRef.current);
           clearInterval(timerRef.current);
@@ -274,8 +282,9 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
     return () => {
       clearInterval(intervalRef.current);
       clearInterval(timerRef.current);
+      clearTimeout(autoNavRef.current);   // FE-014: cancel auto-nav on unmount
     };
-  // onSessionStart is a stable callback from App — intentionally omitted from deps
+  // onSessionStart is a stable callback from App (useState setter) — safe to omit
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
@@ -401,7 +410,9 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
               {isDone ? 'All checks complete' : 'Running analysis modules…'}
             </span>
             <span style={{ fontSize: 10, color: 'var(--color-text-subtle)', fontFamily: 'var(--font-mono)' }}>
-              {isDone ? '5 / 5' : `${Math.round(progress / 20)} / 5`}
+              {isDone
+                ? `${MODULES.length} / ${MODULES.length}`
+                : `${Object.values(session?.moduleStatuses || {}).filter(s => s === 'completed' || s === 'failed').length} / ${MODULES.length}`}
             </span>
           </div>
         </div>
