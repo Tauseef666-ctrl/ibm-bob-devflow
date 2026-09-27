@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useParams } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
@@ -10,8 +10,20 @@ import { ReportPage } from './pages/ReportPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ToastProvider } from './components/ui/Toast';
 
+const LAST_SESSION_KEY = 'devflow_last_session';
+
+/**
+ * Sync the active session from the route param so the header nav is populated
+ * on direct URL access or refresh, not only after the dashboard fires a
+ * callback.
+ */
 function AnalysisRoutes({ setActiveSession }) {
   const { id } = useParams();
+
+  useEffect(() => {
+    if (id) setActiveSession(id);
+  }, [id, setActiveSession]);
+
   return (
     <Routes>
       <Route index element={<AnalysisPage sessionId={id} onSessionStart={setActiveSession} />} />
@@ -24,7 +36,11 @@ function AnalysisRoutes({ setActiveSession }) {
 }
 
 export default function App() {
-  const [activeSession, setActiveSession] = useState(null);
+  const [activeSession, setActiveSession] = useState(() => {
+    // Hydrate from the key DashboardPage already writes on analysis start, so
+    // the nav is correct on the first paint after a refresh.
+    return localStorage.getItem(LAST_SESSION_KEY) || null;
+  });
 
   return (
     <ErrorBoundary>
@@ -51,7 +67,7 @@ export default function App() {
           color: 'var(--color-text-subtle)',
           background: 'var(--color-surface)',
         }}>
-          <span>⚡ DevFlow AI — IBM Bob 2.0 Hackathon</span>
+          <span><span aria-hidden="true">⚡</span> DevFlow AI — IBM Bob 2.0 Hackathon</span>
           <span>Built by The7th Neo</span>
         </footer>
       </ToastProvider>

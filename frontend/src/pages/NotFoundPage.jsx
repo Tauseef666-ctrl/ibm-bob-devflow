@@ -13,7 +13,7 @@ export function NotFoundPage() {
       padding: 'var(--space-8)',
       textAlign: 'center',
     }}>
-      <div style={{ fontSize: 48, marginBottom: 'var(--space-4)' }}>🔍</div>
+      <div style={{ fontSize: 48, marginBottom: 'var(--space-4)' }} aria-hidden="true">🔍</div>
       <h1 style={{ fontWeight: 800, fontSize: 'var(--font-size-2xl)', marginBottom: 'var(--space-3)', letterSpacing: '-0.03em' }}>
         404
       </h1>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import { api } from '../../api/client';
 
 /**
@@ -36,7 +36,6 @@ const HEALTH_COPY = {
 };
 
 export function Header({ sessionId }) {
-  const navigate = useNavigate();
   const health = useApiHealth();
 
   return (
@@ -53,17 +52,21 @@ export function Header({ sessionId }) {
       zIndex: 100,
       boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
     }}>
-      <div
-        onClick={() => navigate('/')}
-        style={{
+      {/* NavLink rather than a div with onClick, so the logo is focusable,
+          activatable with Enter and announced as a link. */}
+      <NavLink
+        to="/"
+        aria-label="DevFlow AI — back to dashboard"
+        style={{ textDecoration: 'none', color: 'inherit' }}
+      >
+        <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--space-2)',
-          cursor: 'pointer',
           userSelect: 'none',
         }}
       >
-        <span style={{ fontSize: 22 }}>⚡</span>
+        <span style={{ fontSize: 22 }} aria-hidden="true">⚡</span>
         <span style={{
           fontWeight: 700,
           fontSize: 'var(--font-size-md)',
@@ -82,6 +85,7 @@ export function Header({ sessionId }) {
           Release Readiness
         </span>
       </div>
+      </NavLink>
 
       <span
         title={HEALTH_COPY[health]}

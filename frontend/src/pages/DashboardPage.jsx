@@ -100,14 +100,15 @@ function getCategoryStatus(findings, categoryId) {
   const hasCrit = cats.some(f => f.severity === 'critical');
   const hasHigh = cats.some(f => f.severity === 'high');
   if (hasCrit) return   { key: 'fail',    label: 'Critical', icon: FailIcon,    cls: 'badge-critical' };
-  if (hasHigh) return   { key: 'warn',    label: 'Warning',  icon: WarnIcon,    cls: 'badge-warn'   };
-  return                { key: 'warn',    label: 'Warning',  icon: WarnIcon,    cls: 'badge-warn'   };
+  if (hasHigh) return   { key: 'warn',    label: 'Warning',  icon: WarnIcon,    cls: 'badge-warn'     };
+  // medium/low only — use info style to distinguish from high-severity warning
+  return                { key: 'info',    label: 'Minor',    icon: PendingIcon, cls: 'badge-info'     };
 }
 
 function getReadinessInfo(score) {
-  if (score >= 80) return { label: 'Release Ready',    color: 'var(--color-pass)',   ring: '#16a34a' };
-  if (score >= 50) return { label: 'Needs Attention',  color: '#d97706',             ring: '#d97706' };
-  return                   { label: 'Not Ready',        color: 'var(--color-critical)',ring: '#dc2626' };
+  if (score >= 80) return { label: 'Release Ready',    color: 'var(--color-pass)',     ring: '#16a34a' };
+  if (score >= 50) return { label: 'Needs Attention',  color: '#d97706',               ring: '#d97706' };
+  return                   { label: 'Action Required',  color: 'var(--color-critical)', ring: '#dc2626' };
 }
 
 function computeReadiness(findings) {
@@ -132,12 +133,14 @@ function WorkflowBanner() {
     }}>
       {WORKFLOW_STEPS.map((step, i) => (
         <React.Fragment key={step.key}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 72 }}>
+          {/* flexShrink:0 prevents steps from shrinking and wrapping on narrow viewports */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 72, flexShrink: 0 }}>
             <span style={{
               fontSize: 11, fontWeight: 700, letterSpacing: '0.04em',
               color: 'var(--color-text)', textTransform: 'uppercase',
+              whiteSpace: 'nowrap',  /* FE-025: prevent label wrapping on 320px */
             }}>{step.label}</span>
-            <span style={{ fontSize: 10, color: 'var(--color-text-subtle)', marginTop: 2 }}>{step.desc}</span>
+            <span style={{ fontSize: 10, color: 'var(--color-text-subtle)', marginTop: 2, whiteSpace: 'nowrap' }}>{step.desc}</span>
           </div>
           {i < WORKFLOW_STEPS.length - 1 && (
             <div style={{ flex: '1 0 20px', height: 1, background: 'var(--color-border)', margin: '0 4px', minWidth: 16 }} />
@@ -160,10 +163,16 @@ function CategoryCard({ cat, findings, sessionId, navigate }) {
     ? 'var(--color-medium-border)'
     : '#bbf7d0';
 
+  const handleActivate = () => { if (sessionId) navigate(`/analysis/${sessionId}/findings`); };
+
   return (
     <div
       className="card"
-      onClick={() => sessionId && navigate(`/analysis/${sessionId}/findings`)}
+      role={sessionId ? 'button' : undefined}
+      tabIndex={sessionId ? 0 : undefined}
+      aria-label={sessionId ? `View findings for ${cat.label}` : undefined}
+      onClick={handleActivate}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleActivate(); } }}
       style={{
         padding: '16px 18px',
         borderLeft: `3px solid ${borderColor}`,
@@ -262,7 +271,7 @@ export function DashboardPage({ onSessionStart }) {
     setProjectError(null);
     api.listProjects()
       .then(setProjects)
-      .catch(() => setProjectError('Cannot reach the backend on port 3001.'))
+      .catch(err => setProjectError(err.message || 'Cannot reach the backend.'))
       .finally(() => setLoadingProjects(false));
   }, []);
 
@@ -273,12 +282,13 @@ export function DashboardPage({ onSessionStart }) {
     if (!sessionId) return;
     setLoadingSession(true);
     try {
-      const [statusData, findingsData] = await Promise.all([
-        api.getStatus(sessionId),
-        api.getFindings(sessionId),
-      ]);
+      // Always fetch status; only fetch findings if the session completed
+      const statusData = await api.getStatus(sessionId);
       setLastSession(statusData);
-      setFindings(findingsData.findings || []);
+      if (statusData.status === 'completed') {
+        const findingsData = await api.getFindings(sessionId);
+        setFindings(findingsData.findings || []);
+      }
     } catch {
       // Session expired or not found — clear stored id
       localStorage.removeItem(LAST_SESSION_KEY);
@@ -345,7 +355,8 @@ export function DashboardPage({ onSessionStart }) {
             <div>
               <h2 className="section-title" style={{ marginBottom: 4 }}>Last Analysis</h2>
               <p style={{ fontSize: 12, color: 'var(--color-text-subtle)' }}>
-                {lastSession.projectName} · Run #{lastSession.runNumber} · {new Date(lastSession.completedAt).toLocaleString()}
+                {lastSession.projectName} · Run #{lastSession.runNumber}
+                {lastSession.completedAt ? ` · ${new Date(lastSession.completedAt).toLocaleString()}` : ''}
               </p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -437,10 +448,17 @@ export function DashboardPage({ onSessionStart }) {
             borderRadius: 'var(--radius)', padding: '12px 14px', marginBottom: 16,
           }}>
             <FailIcon size={14} />
-            <div>
+            <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--color-critical)' }}>Connection Error</div>
               <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{projectError}</div>
             </div>
+            <button
+              className="btn-secondary"
+              style={{ fontSize: 12, flexShrink: 0 }}
+              onClick={fetchProjects}
+            >
+              Retry
+            </button>
           </div>
         )}
 
