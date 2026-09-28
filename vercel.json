@@ -5,7 +5,7 @@
   "functions": {
     "api/index.js": {
       "memory": 512,
-      "maxDuration": 300,
+      "maxDuration": 30,
       "includeFiles": [
         "sample-project/README.md",
         "sample-project/CHANGELOG.md",
