@@ -9,20 +9,28 @@ and the Express API from one origin, so production needs no CORS preflight.
 # the SPA is served
 curl -s -o /dev/null -w '%{http_code}\n' https://<your-domain>/
 
-# the API shell responds (both are expected to work on Vercel)
+# the API shell responds
 curl -s https://<your-domain>/api/health
 curl -s https://<your-domain>/api/projects
+
+# the analysis runs and returns the whole result in one request
+printf '{"projectId":"items-api"}' > req.json
+curl -s -X POST -H 'Content-Type: application/json' --data-binary @req.json \
+  https://<your-domain>/api/analysis/run
 ```
 
-A 404 on `/api/health` means the function did not build or the `/api/*` route
-is missing, not that the API is disabled. Check the three command fields in
+Pass the JSON from a **file**. Inline JSON in PowerShell loses its quotes and
+sends `{projectId:items-api}`, which fails with a misleading
+`SyntaxError: Expected property name or '}' in JSON`. That was originally
+mistaken for a serverless incompatibility.
+
+A 404 on `/api/health` means the function did not build or the `/api/*` route is
+missing. Check the command fields in
 [Required project settings](#required-project-settings) before suspecting the
 code.
 
-Starting an analysis returns an error on Vercel. That is expected and is
-documented in
-[The analysis API cannot run on Vercel](#the-analysis-api-cannot-run-on-vercel)
-— a deliberate design limit, not a misconfiguration. The demo runs locally.
+`/api/health` reports `"stateful": false` on Vercel, meaning a session cannot be
+polled. The analysis runs through `POST /api/analysis/run` instead.
 
 ## How it fits together
 
@@ -65,9 +73,10 @@ Note the Install Command is `npm run install:all`, not `npm install`. The root
 `package.json` has only `concurrently` as a dependency, so a bare `npm install`
 provisions nothing the API needs.
 
-These settings produce a *building* deployment. They do not produce a *working
-analysis API* — see [The analysis API cannot run on Vercel](#the-analysis-api-cannot-run-on-vercel)
-below, which is a deliberate design limit rather than a misconfiguration.
+These settings produce a *building* deployment. To produce a *working analysis
+API* the function also needs `includeFiles` for the sample project, which
+`vercel.json` sets. See
+[Running the analysis on Vercel](#running-the-analysis-on-vercel).
 
 ### Root Directory must stay empty
 
@@ -106,31 +115,61 @@ node -e "const app = require('./api/index.js'); console.log(typeof app.listen)"
 
 Expected output: `function`.
 
-## The analysis API cannot run on Vercel
+## Running the analysis on Vercel
 
-This is a hard limitation, verified, not a configuration mistake. Do not spend
-build cycles on it.
+The analysis **does** run on Vercel. It returns the same 21 findings as a local
+run, in roughly 700 ms of analysis time. An earlier revision of this document
+claimed it could not; that was wrong on all three counts below, and the reasons
+are worth recording so the fixes are not undone.
 
-Three independent requirements break in a serverless bundle:
+### The synchronous endpoint
 
-| Requirement | Where | Why it fails on Vercel |
-|---|---|---|
-| The analysis target is resolved as a fixed relative path, `../../../sample-project` from `backend/src/routes/` | `backend/src/routes/analysis.js:16` | Any Root Directory other than the repo root changes that path, and a subfolder root does not upload `sample-project/` at all |
-| The build/release module shells out to `npm install` and `npm test` with `cwd` inside the target | `backend/src/modules/buildRelease.js:66`, `backend/src/modules/testHealth.js:140` | The bundle is read-only apart from `/tmp`, so `npm` cannot write `node_modules` |
-| Auto-remediation writes real files (`.gitignore`, `.env.example`, `package.json` fields) | `backend/src/remediation/remediator.js:57` | Same read-only bundle; the before/after panel depends on these writes succeeding |
+Vercel gives each invocation a fresh module instance, so `analysisStore` is
+per-instance memory. A started session therefore disappears on the next
+cold-start poll:
 
-There is also a duration problem, though it is secondary: the function is
-capped at 30 seconds, and a local analysis run takes roughly 14 seconds, so a
-cold start can exceed the budget.
+```
+GET /api/analysis/<id>/status  ->  {"error":"Session not found"}
+```
 
-Making this work on Vercel would mean removing the `npm` shell-outs and the
-write-based remediation. That is a redesign, not a config change, and it would
-also remove the real wall-clock per-module timings that `AGENTS.md` records as a
-core design decision. It has not been done deliberately.
+This was intermittent, not consistent — a warm instance hides it, which is the
+worst possible failure mode for a demo.
 
-**Conclusion: run the demo locally with `npm start`.** A Vercel deployment can
-host the UI shell, but analysis has to happen on a machine with a writable
-filesystem and a working `npm`.
+`POST /api/analysis/run` exists for that reason. It performs the whole workflow
+inside a **single request** and returns findings, action plan and report
+together, so nothing depends on state surviving between invocations.
+`GET /api/health` reports `"stateful": false` when `process.env.VERCEL` is set,
+and the frontend switches to that endpoint automatically. The `start` + poll
+endpoints are unchanged and still serve local development.
+
+### Three fixes that made it work
+
+| Problem | Fix |
+|---|---|
+| Non-JS files never reached the function, so `documentation.js:22` saw no README and *inverted* its findings — Vercel reported `README.md is missing` and omitted `readme-no-setup`, `missing-env-docs` and `No CHANGELOG found` | `"includeFiles": "sample-project/**"` in `vercel.json` |
+| `buildRelease.js:81` returns early when `npm install` fails. The install cannot succeed in a read-only bundle, so it emitted a false critical **and suppressed the real `npm test failed` finding** | Skip the install when `process.env.VERCEL` is set; `npm test` still runs |
+| `includeFiles` was written as an array | It must be a **string**. The build failed with `Invalid vercel.json - functions['api/index.js'].includeFiles' should be string` |
+
+Reproduce config errors locally instead of burning a build cycle:
+
+```bash
+npx vercel build
+```
+
+### Two things that are still deliberately limited
+
+**Auto-remediation cannot work on Vercel.** It writes real files, and the
+bundle is read-only. `api.remediateAny` fails with that reason spelled out
+rather than a 404, so the UI can show an honest error. Run the backend locally
+to apply fixes.
+
+**Auto-fix still works locally**, where the store is real and the filesystem is
+writable.
+
+### `maxDuration` stays at 30s
+
+Raising it to 300 was rejected on this plan, and it is not needed: the response
+is produced in under two seconds, so the analysis never approaches the budget.
 
 ## Deploying the backend on its own
 
@@ -166,13 +205,15 @@ As with the frontend, `vercel-build` did not originally exist in
 `backend/package.json`; a backend-rooted project asking for it produced the
 same `Missing script: "vercel-build"` error.
 
-This serves `/api/health` and `/api/projects`. Starting an analysis does not
-work here — see above.
+This serves `/api/health` and `/api/projects`. The analysis also runs here via
+`POST /api/analysis/run`, provided `includeFiles` in `backend/vercel.json` points
+at the sample project.
 
 ## Deploying the frontend on its own
 
-If you want the UI on Vercel even though the API cannot run there, deploy
-`frontend/` as a separate project. Two files in this repository make that work:
+To host the UI on a separate origin from the API, deploy `frontend/` as its own
+project.
+ Two files in this repository make that work:
 
 - `frontend/vercel.json` — pins `npm run build`, `dist` as the output
   directory, and the SPA fallback rewrite. Vercel reads `vercel.json` from the
@@ -217,5 +258,6 @@ esbuild arrives as a Vite dependency. esbuild resolves its platform binary
 through an optional dependency rather than the postinstall, so the warning does
 not fail the build.
 
-Without a reachable API the deployed SPA renders its error state, so this is a
-UI preview only.
+With `VITE_API_URL` set, the standalone frontend runs the analysis against the
+API project. The only unavailable feature is auto-remediation, which needs a
+writable filesystem on the API side.
