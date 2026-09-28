@@ -1,8 +1,8 @@
-﻿import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 
-// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
   { id: 'code-health',    label: 'Code Health',    abbr: 'CODE HEALTH',    icon: CodeHealthIcon    },
@@ -23,7 +23,7 @@ const WORKFLOW_STEPS = [
 
 const LAST_SESSION_KEY = 'devflow_last_session';
 
-// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── SVG Icons ────────────────────────────────────────────────────────────────
 
 function CodeHealthIcon({ size = 16 }) {
   return (
@@ -92,7 +92,7 @@ function PendingIcon({ size = 12 }) {
   );
 }
 
-// â”€â”€â”€ Status helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Status helpers ────────────────────────────────────────────────────────────
 
 function getCategoryStatus(findings, categoryId) {
   const cats = findings.filter(f => f.category === categoryId && f.status !== 'fixed');
@@ -101,7 +101,7 @@ function getCategoryStatus(findings, categoryId) {
   const hasHigh = cats.some(f => f.severity === 'high');
   if (hasCrit) return   { key: 'fail',    label: 'Critical', icon: FailIcon,    cls: 'badge-critical' };
   if (hasHigh) return   { key: 'warn',    label: 'Warning',  icon: WarnIcon,    cls: 'badge-warn'     };
-  // medium/low only â€” use info style to distinguish from high-severity warning
+  // medium/low only — use info style to distinguish from high-severity warning
   return                { key: 'info',    label: 'Minor',    icon: PendingIcon, cls: 'badge-info'     };
 }
 
@@ -121,7 +121,7 @@ function computeReadiness(findings) {
   return Math.max(0, Math.min(100, 100 - penalty));
 }
 
-// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Sub-components ────────────────────────────────────────────────────────────
 
 function WorkflowBanner() {
   return (
@@ -252,7 +252,7 @@ function ReadinessGauge({ score, info }) {
   );
 }
 
-// â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ─── Main page ─────────────────────────────────────────────────────────────────
 
 export function DashboardPage({ onSessionStart }) {
   const navigate = useNavigate();
@@ -265,7 +265,7 @@ export function DashboardPage({ onSessionStart }) {
   const [loadingSession, setLoadingSession] = useState(false);
   const [starting, setStarting]         = useState(null);  // projectId being started
 
-  // Load projects â€” with retry capability
+  // Load projects — with retry capability
   const fetchProjects = useCallback(() => {
     setLoadingProjects(true);
     setProjectError(null);
@@ -290,7 +290,7 @@ export function DashboardPage({ onSessionStart }) {
         setFindings(findingsData.findings || []);
       }
     } catch {
-      // Session expired or not found â€” clear stored id
+      // Session expired or not found — clear stored id
       localStorage.removeItem(LAST_SESSION_KEY);
     } finally {
       setLoadingSession(false);
@@ -324,7 +324,7 @@ export function DashboardPage({ onSessionStart }) {
   return (
     <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: '32px 24px' }}>
 
-      {/* â”€â”€ Page header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Page header ─────────────────────────────────────────────────── */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 26, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>
           Release Readiness Dashboard
@@ -334,14 +334,14 @@ export function DashboardPage({ onSessionStart }) {
         </p>
       </div>
 
-      {/* â”€â”€ Workflow guide â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Workflow guide ───────────────────────────────────────────────── */}
       <WorkflowBanner />
 
-      {/* â”€â”€ Last session summary (only if completed) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Last session summary (only if completed) ────────────────────── */}
       {loadingSession && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 28, color: 'var(--color-text-muted)', fontSize: 13 }}>
           <span className="spinner" />
-          Loading last sessionâ€¦
+          Loading last session…
         </div>
       )}
 
@@ -355,8 +355,8 @@ export function DashboardPage({ onSessionStart }) {
             <div>
               <h2 className="section-title" style={{ marginBottom: 4 }}>Last Analysis</h2>
               <p style={{ fontSize: 12, color: 'var(--color-text-subtle)' }}>
-                {lastSession.projectName} Â· Run #{lastSession.runNumber}
-                {lastSession.completedAt ? ` Â· ${new Date(lastSession.completedAt).toLocaleString()}` : ''}
+                {lastSession.projectName} · Run #{lastSession.runNumber}
+                {lastSession.completedAt ? ` · ${new Date(lastSession.completedAt).toLocaleString()}` : ''}
               </p>
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
@@ -384,7 +384,7 @@ export function DashboardPage({ onSessionStart }) {
             </div>
           </div>
 
-          {/* Score + category cards â€” stack on narrow screens */}
+          {/* Score + category cards — stack on narrow screens */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 20, alignItems: 'start' }}>
             {/* Gauge */}
             <div
@@ -396,7 +396,7 @@ export function DashboardPage({ onSessionStart }) {
               <ReadinessGauge score={readiness} info={readinessInfo} />
             </div>
 
-            {/* Category grid â€” takes remaining space, min 280px so it wraps below gauge on small screens */}
+            {/* Category grid — takes remaining space, min 280px so it wraps below gauge on small screens */}
             <div style={{ flex: '1 1 280px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
               {CATEGORIES.map(cat => (
                 <CategoryCard
@@ -424,18 +424,18 @@ export function DashboardPage({ onSessionStart }) {
           <div style={{ fontSize: 13, color: lastSession.status === 'failed' ? 'var(--color-critical)' : 'var(--color-accent)', fontWeight: 500 }}>
             {lastSession.status === 'failed'
               ? `Analysis failed: ${lastSession.error || 'unknown error'}`
-              : `Analysis in progress for ${lastSession.projectName}â€¦`}
+              : `Analysis in progress for ${lastSession.projectName}…`}
           </div>
           {lastSession.status !== 'failed' && (
             <button className="btn-primary" style={{ fontSize: 12 }}
               onClick={() => navigate(`/analysis/${lastSession.sessionId}`)}>
-              View Progress â†’
+              View Progress →
             </button>
           )}
         </div>
       )}
 
-      {/* â”€â”€ Project selection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+      {/* ── Project selection ────────────────────────────────────────────── */}
       <section>
         <h2 className="section-title">
           {hasCompletedSession ? 'Run New Analysis' : 'Select Project to Analyze'}
@@ -465,7 +465,7 @@ export function DashboardPage({ onSessionStart }) {
         {loadingProjects ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--color-text-muted)', fontSize: 13, padding: '20px 0' }}>
             <span className="spinner" />
-            Loading projectsâ€¦
+            Loading projects…
           </div>
         ) : projects.length === 0 && !projectError ? (
           <div style={{
@@ -510,10 +510,10 @@ export function DashboardPage({ onSessionStart }) {
                   {starting === p.id ? (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
                       <span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} />
-                      Startingâ€¦
+                      Starting…
                     </span>
                   ) : (
-                    'â–¶ Analyze'
+                    '▶ Analyze'
                   )}
                 </button>
               </div>
