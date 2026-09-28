@@ -6,6 +6,13 @@ const orchestrator = require('../engine/orchestrator');
 
 const router = express.Router();
 
+// On Vercel each invocation can get a fresh module instance, so the in-memory
+// store cannot be relied on across requests: a /status poll on a cold start
+// returns "Session not found". The analysis itself is deterministic, so
+// POST /analysis/run performs the whole workflow inside a single request and
+// returns the result directly. No cross-invocation state is needed.
+const IS_SERVERLESS = !!process.env.VERCEL;
+
 // Registered sample projects (allowlist)
 const SAMPLE_PROJECTS = [
   {
@@ -21,6 +28,32 @@ function getProjectById(id) {
   return SAMPLE_PROJECTS.find(p => p.id === id) || null;
 }
 
+const PENDING_MODULE_STATUSES = {
+  'code-health': 'pending',
+  'test-health': 'pending',
+  'documentation': 'pending',
+  'configuration': 'pending',
+  'build-release': 'pending',
+};
+
+function createSessionFor(project, { runNumber = 1, parentSessionId = null } = {}) {
+  return store.createSession({
+    id: uuidv4(),
+    projectId: project.id,
+    projectPath: project.path,
+    projectName: project.name,
+    status: 'pending',
+    startedAt: Date.now(),
+    completedAt: null,
+    runNumber,
+    parentSessionId,
+    moduleStatuses: { ...PENDING_MODULE_STATUSES },
+    moduleTimings: {},
+    totalDurationMs: 0,
+    error: null,
+  });
+}
+
 /**
  * GET /api/projects
  * List available sample projects.
@@ -29,6 +62,52 @@ router.get('/projects', (req, res) => {
   res.json(SAMPLE_PROJECTS.map(({ id, name, description, language }) => ({
     id, name, description, language,
   })));
+});
+
+/**
+ * POST /api/analysis/run
+ * Body: { projectId: string }
+ * Run the full workflow synchronously and return the complete result.
+ *
+ * This is the serverless-safe path: everything is produced inside one request,
+ * so it does not depend on the session surviving in module memory. Used by the
+ * frontend when GET /api/health reports stateful: false.
+ */
+router.post('/analysis/run', async (req, res) => {
+  const { projectId } = req.body;
+
+  if (!projectId) {
+    return res.status(400).json({ error: 'projectId is required' });
+  }
+
+  const project = getProjectById(projectId);
+  if (!project) {
+    return res.status(404).json({ error: `Unknown projectId: ${projectId}` });
+  }
+
+  const session = createSessionFor(project);
+
+  try {
+    await orchestrator.runAnalysis(session.id);
+  } catch (err) {
+    console.error(`[orchestrator] session ${session.id} failed:`, err.message);
+    return res.status(500).json({ error: err.message, sessionId: session.id });
+  }
+
+  const finalSession = store.getSession(session.id);
+  res.json({
+    sessionId: session.id,
+    status: finalSession.status,
+    runNumber: finalSession.runNumber,
+    projectId: finalSession.projectId,
+    projectName: finalSession.projectName,
+    totalDurationMs: finalSession.totalDurationMs,
+    moduleStatuses: finalSession.moduleStatuses,
+    moduleTimings: finalSession.moduleTimings,
+    findings: store.getFindings(session.id),
+    actionPlan: store.getActionPlan(session.id),
+    report: store.getReport(session.id),
+  });
 });
 
 /**

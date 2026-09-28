@@ -35,7 +35,15 @@ app.use(express.json());
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', service: 'devflow-ai-backend', timestamp: Date.now() });
+  res.json({
+    status: 'ok',
+    service: 'devflow-ai-backend',
+    timestamp: Date.now(),
+    // On Vercel the in-memory store does not survive between invocations, so the
+    // frontend must use the synchronous POST /api/analysis/run path instead of
+    // starting a session and polling it.
+    stateful: !process.env.VERCEL,
+  });
 });
 
 // Routes
