@@ -1,9 +1,9 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { useToast } from '../components/ui/Toast';
 
-// ─── Static config ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Static config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const OVERALL_CONFIG = {
   'ready':           { label: 'Release Ready',    color: 'var(--color-pass)',     bg: 'var(--color-pass-bg)',     border: '#bbf7d0' },
@@ -19,7 +19,7 @@ const CAT_STATUS_CONFIG = {
 
 /**
  * Readiness formula (same weights used in DashboardPage):
- *   100 - (critical×20 + high×10 + medium×4 + low×1)
+ *   100 - (criticalÃ—20 + highÃ—10 + mediumÃ—4 + lowÃ—1)
  * Clamped to [0, 100].
  */
 function computeReadiness(scoreSummary) {
@@ -34,7 +34,7 @@ function getReadinessInfo(score) {
   return                   { label: 'Action Required',color: 'var(--color-critical)', ring: '#dc2626' };
 }
 
-// ─── SVG icons ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SVG icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function IconCheck({ size = 14 }) {
   return (
@@ -70,16 +70,16 @@ function IconRefresh({ size = 14 }) {
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatMs(ms) {
-  if (ms === null || ms === undefined) return '—';
+  if (ms === null || ms === undefined) return 'â€”';
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(2)}s`;
 }
 
 function formatDate(epoch) {
-  if (!epoch) return '—';
+  if (!epoch) return 'â€”';
   return new Date(epoch).toLocaleString(undefined, {
     month: 'short', day: 'numeric',
     hour: '2-digit', minute: '2-digit',
@@ -90,7 +90,7 @@ function formatDate(epoch) {
 function toMarkdown(report) {
   const s = report.scoreSummary;
   const lines = [
-    `# Release Readiness Report — run ${report.runNumber}`,
+    `# Release Readiness Report â€” run ${report.runNumber}`,
     '',
     `**Status:** ${OVERALL_CONFIG[report.overallStatus]?.label || report.overallStatus}`,
     `**Generated:** ${new Date(report.generatedAt).toISOString()}`,
@@ -121,7 +121,7 @@ function toMarkdown(report) {
       '',
       '## Before vs after',
       '',
-      `Run 1: ${b.run1FindingCount} → Run ${report.runNumber}: ${b.run2FindingCount} (${b.fixedCount} fixed, ${b.remainingCount} remaining)`,
+      `Run 1: ${b.run1FindingCount} â†’ Run ${report.runNumber}: ${b.run2FindingCount} (${b.fixedCount} fixed, ${b.remainingCount} remaining)`,
     );
   }
   if (report.workflowTimeline?.length) {
@@ -145,7 +145,7 @@ function download(filename, contents, type) {
   URL.revokeObjectURL(url);
 }
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ReadinessGauge({ score, info }) {
   const circumference = 2 * Math.PI * 44;
@@ -190,14 +190,14 @@ function StatCell({ label, value, color, sublabel }) {
   );
 }
 
-// ─── Loading / error states ───────────────────────────────────────────────────
+// â”€â”€â”€ Loading / error states â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function LoadingState() {
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, color: 'var(--color-text-muted)', fontSize: 14 }}>
         <span className="spinner" />
-        Loading release readiness report…
+        Loading release readiness reportâ€¦
       </div>
     </div>
   );
@@ -218,12 +218,12 @@ function ErrorState({ error, onBack }) {
           <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{error}</div>
         </div>
       </div>
-      <button className="btn-secondary" onClick={onBack} style={{ fontSize: 13 }}>← Back</button>
+      <button className="btn-secondary" onClick={onBack} style={{ fontSize: 13 }}>â† Back</button>
     </div>
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const REPORT_POLL_INTERVAL = 2000;
 
@@ -243,7 +243,7 @@ export function ReportPage({ sessionId }) {
 
     async function fetchReport() {
       try {
-        const data = await api.getReport(sessionId);
+        const data = await api.getReportAny(sessionId);
         if (cancelled) return;
 
         // Backend returns HTTP 202 { status, message } when not yet complete.
@@ -251,7 +251,7 @@ export function ReportPage({ sessionId }) {
         // the presence of `data.status` (the 202 body) vs the completed report
         // which uses `data.overallStatus`.
         if (data.status) {
-          // Analysis still running — switch to "waiting" mode and poll
+          // Analysis still running â€” switch to "waiting" mode and poll
           setWaiting(true);
           setLoading(false);
           pollRef.current = setTimeout(fetchReport, REPORT_POLL_INTERVAL);
@@ -279,7 +279,7 @@ export function ReportPage({ sessionId }) {
     setReanalyzing(true);
     setReanalyzeError(null);
     try {
-      const { sessionId: newId } = await api.reanalyze(sessionId);
+      const { sessionId: newId } = await api.reanalyzeAny(sessionId);
       toast.info('Re-analysis started');
       navigate(`/analysis/${newId}`);
     } catch (err) {
@@ -290,7 +290,7 @@ export function ReportPage({ sessionId }) {
 
   if (loading) return <LoadingState />;
 
-  // Analysis is still running — show a "waiting" state with auto-refresh
+  // Analysis is still running â€” show a "waiting" state with auto-refresh
   if (waiting) {
     return (
       <div style={{ maxWidth: 760, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
@@ -312,10 +312,10 @@ export function ReportPage({ sessionId }) {
             style={{ fontSize: 12, flexShrink: 0 }}
             onClick={() => navigate(`/analysis/${sessionId}`)}
           >
-            View Progress →
+            View Progress â†’
           </button>
         </div>
-        <button className="btn-secondary" onClick={() => navigate(-1)} style={{ fontSize: 13 }}>← Back</button>
+        <button className="btn-secondary" onClick={() => navigate(-1)} style={{ fontSize: 13 }}>â† Back</button>
       </div>
     );
   }
@@ -336,7 +336,7 @@ export function ReportPage({ sessionId }) {
   return (
     <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
 
-      {/* ── Page header ── */}
+      {/* â”€â”€ Page header â”€â”€ */}
       <div style={{
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
         marginBottom: 28, flexWrap: 'wrap', gap: 12,
@@ -346,7 +346,7 @@ export function ReportPage({ sessionId }) {
             Release Readiness Report
           </h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: 12 }}>
-            Run #{report.runNumber} · Generated {formatDate(report.generatedAt)}
+            Run #{report.runNumber} Â· Generated {formatDate(report.generatedAt)}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -360,7 +360,7 @@ export function ReportPage({ sessionId }) {
                 toast.success('Report copied as Markdown');
               } catch {
                 download(`devflow-report-run${report.runNumber}.md`, md, 'text/markdown');
-                toast.info('Clipboard blocked — downloaded Markdown instead');
+                toast.info('Clipboard blocked â€” downloaded Markdown instead');
               }
             }}
           >
@@ -383,7 +383,7 @@ export function ReportPage({ sessionId }) {
             style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
           >
             {reanalyzing ? (
-              <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Starting…</>
+              <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Startingâ€¦</>
             ) : (
               <><IconRefresh size={13} /> Re-Run Analysis</>
             )}
@@ -391,7 +391,7 @@ export function ReportPage({ sessionId }) {
         </div>
       </div>
 
-      {/* ── Re-analyze error — inline, no alert() ── */}
+      {/* â”€â”€ Re-analyze error â€” inline, no alert() â”€â”€ */}
       {reanalyzeError && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 20,
@@ -410,7 +410,7 @@ export function ReportPage({ sessionId }) {
         </div>
       )}
 
-      {/* ── Hero: gauge + status banner ── */}
+      {/* â”€â”€ Hero: gauge + status banner â”€â”€ */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 24, flexWrap: 'wrap',
         marginBottom: 28, padding: '20px 24px',
@@ -438,11 +438,11 @@ export function ReportPage({ sessionId }) {
               ? 'No open findings detected. The project is ready to release.'
               : <>
                   {scoreSummary.total} open finding{scoreSummary.total !== 1 ? 's' : ''}
-                  {scoreSummary.critical > 0 && <> · <strong style={{ color: 'var(--color-critical)' }}>{scoreSummary.critical} critical</strong></>}
-                  {scoreSummary.high > 0 && <> · <strong style={{ color: 'var(--color-high)' }}>{scoreSummary.high} high</strong></>}
-                  {scoreSummary.medium > 0 && <> · {scoreSummary.medium} medium</>}
-                  {scoreSummary.low > 0 && <> · {scoreSummary.low} low</>}
-                  {scoreSummary.fixed > 0 && <> · <span style={{ color: 'var(--color-pass)' }}>{scoreSummary.fixed} fixed</span></>}
+                  {scoreSummary.critical > 0 && <> Â· <strong style={{ color: 'var(--color-critical)' }}>{scoreSummary.critical} critical</strong></>}
+                  {scoreSummary.high > 0 && <> Â· <strong style={{ color: 'var(--color-high)' }}>{scoreSummary.high} high</strong></>}
+                  {scoreSummary.medium > 0 && <> Â· {scoreSummary.medium} medium</>}
+                  {scoreSummary.low > 0 && <> Â· {scoreSummary.low} low</>}
+                  {scoreSummary.fixed > 0 && <> Â· <span style={{ color: 'var(--color-pass)' }}>{scoreSummary.fixed} fixed</span></>}
                 </>
             }
           </p>
@@ -454,12 +454,12 @@ export function ReportPage({ sessionId }) {
             background: 'rgba(0,0,0,0.04)', borderRadius: 4,
             padding: '4px 8px', fontFamily: 'var(--font-mono)',
           }}>
-            Score = 100 − (critical×20 + high×10 + medium×4 + low×1)
+            Score = 100 âˆ’ (criticalÃ—20 + highÃ—10 + mediumÃ—4 + lowÃ—1)
           </div>
         </div>
       </div>
 
-      {/* ── 4-stat summary row ── */}
+      {/* â”€â”€ 4-stat summary row â”€â”€ */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
@@ -478,7 +478,7 @@ export function ReportPage({ sessionId }) {
         )}
       </div>
 
-      {/* ── Two-column: score breakdown + category results ── */}
+      {/* â”€â”€ Two-column: score breakdown + category results â”€â”€ */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
@@ -491,10 +491,10 @@ export function ReportPage({ sessionId }) {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <tbody>
               {[
-                { label: 'Critical',   key: 'critical', cls: 'badge-critical', weight: '×20 penalty' },
-                { label: 'High',       key: 'high',     cls: 'badge-high',     weight: '×10 penalty' },
-                { label: 'Medium',     key: 'medium',   cls: 'badge-medium',   weight: '×4 penalty'  },
-                { label: 'Low',        key: 'low',      cls: 'badge-low',      weight: '×1 penalty'  },
+                { label: 'Critical',   key: 'critical', cls: 'badge-critical', weight: 'Ã—20 penalty' },
+                { label: 'High',       key: 'high',     cls: 'badge-high',     weight: 'Ã—10 penalty' },
+                { label: 'Medium',     key: 'medium',   cls: 'badge-medium',   weight: 'Ã—4 penalty'  },
+                { label: 'Low',        key: 'low',      cls: 'badge-low',      weight: 'Ã—1 penalty'  },
                 { label: 'Info',       key: 'info',     cls: 'badge-info',     weight: 'no penalty'  },
                 { label: 'Fixed',      key: 'fixed',    cls: 'badge-fixed',    weight: null          },
                 { label: 'Total open', key: 'total',    cls: null,             weight: null          },
@@ -544,16 +544,16 @@ export function ReportPage({ sessionId }) {
           <div style={{ marginTop: 12, padding: '8px 10px', background: 'var(--color-surface)', borderRadius: 'var(--radius)', fontSize: 11, color: 'var(--color-text-subtle)', lineHeight: 1.5 }}>
             {passedChecks === totalChecks
               ? 'All categories passed.'
-              : `${passedChecks} of ${totalChecks} categories passed · ${failChecks} critical · ${warnChecks} with warnings`}
+              : `${passedChecks} of ${totalChecks} categories passed Â· ${failChecks} critical Â· ${warnChecks} with warnings`}
           </div>
         </div>
       </div>
 
-      {/* ── Before / After (re-analysis only) ── */}
+      {/* â”€â”€ Before / After (re-analysis only) â”€â”€ */}
       {beforeAfter && (
         <div className="card" style={{ marginBottom: 28 }}>
           <h2 style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
-            Before vs After  <span style={{ fontWeight: 400, color: 'var(--color-text-muted)', fontSize: 12 }}>(Run 1 → Run {report.runNumber})</span>
+            Before vs After  <span style={{ fontWeight: 400, color: 'var(--color-text-muted)', fontSize: 12 }}>(Run 1 â†’ Run {report.runNumber})</span>
           </h2>
           <p style={{ fontSize: 12, color: 'var(--color-text-subtle)', marginBottom: 16 }}>
             Progress made since the first analysis run.
@@ -571,7 +571,7 @@ export function ReportPage({ sessionId }) {
         </div>
       )}
 
-      {/* ── Workflow Timeline ── */}
+      {/* â”€â”€ Workflow Timeline â”€â”€ */}
       {workflowTimeline && workflowTimeline.length > 0 && (
         <div className="card" style={{ marginBottom: 28 }}>
           <h2 style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Workflow Timeline</h2>
@@ -602,7 +602,7 @@ export function ReportPage({ sessionId }) {
                       {formatMs(step.durationMs)}
                     </td>
                     <td style={{ padding: '8px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', color: 'var(--color-text-subtle)' }}>
-                      {step.startedAt ? new Date(step.startedAt).toLocaleTimeString() : '—'}
+                      {step.startedAt ? new Date(step.startedAt).toLocaleTimeString() : 'â€”'}
                     </td>
                   </tr>
                 ))}
@@ -612,7 +612,7 @@ export function ReportPage({ sessionId }) {
         </div>
       )}
 
-      {/* ── Footer navigation ── */}
+      {/* â”€â”€ Footer navigation â”€â”€ */}
       <div style={{
         display: 'flex', gap: 10, justifyContent: 'space-between',
         flexWrap: 'wrap', paddingTop: 8,
@@ -620,11 +620,11 @@ export function ReportPage({ sessionId }) {
         <div style={{ display: 'flex', gap: 8 }}>
           <button className="btn-secondary" style={{ fontSize: 13 }}
             onClick={() => navigate(`/analysis/${sessionId}/findings`)}>
-            ← Findings
+            â† Findings
           </button>
           <button className="btn-secondary" style={{ fontSize: 13 }}
             onClick={() => navigate(`/analysis/${sessionId}/action-plan`)}>
-            ← Action Plan
+            â† Action Plan
           </button>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -639,7 +639,7 @@ export function ReportPage({ sessionId }) {
             style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
           >
             <IconRefresh size={13} />
-            {reanalyzing ? 'Starting…' : 'Re-Run Analysis'}
+            {reanalyzing ? 'Startingâ€¦' : 'Re-Run Analysis'}
           </button>
         </div>
       </div>

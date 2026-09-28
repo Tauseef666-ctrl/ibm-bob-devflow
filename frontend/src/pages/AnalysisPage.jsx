@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useRef } from 'react';
+﻿import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 
 const POLL_INTERVAL = 1500;
 
-// ─── Module definitions (ordered) ────────────────────────────────────────────
+// â”€â”€â”€ Module definitions (ordered) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const MODULES = [
   {
@@ -34,7 +34,7 @@ const MODULES = [
   },
 ];
 
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function IconCheck({ size = 16 }) {
   return (
@@ -114,10 +114,10 @@ const MODULE_ICONS = {
   'build-release': BuildIcon,
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function formatMs(ms) {
-  if (!ms && ms !== 0) return '—';
+  if (!ms && ms !== 0) return 'â€”';
   if (ms < 1000) return `${ms}ms`;
   return `${(ms / 1000).toFixed(1)}s`;
 }
@@ -130,7 +130,7 @@ function computeProgress(moduleStatuses) {
   return Math.round((done / vals.length) * 100);
 }
 
-// ─── Module row component ─────────────────────────────────────────────────────
+// â”€â”€â”€ Module row component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function ModuleRow({ mod, status, timing, index }) {
   const IconComp = MODULE_ICONS[mod.key];
@@ -189,7 +189,7 @@ function ModuleRow({ mod, status, timing, index }) {
         </div>
         <div style={{ fontSize: 12, color: 'var(--color-text-subtle)', lineHeight: 1.4 }}>
           {isRunning ? (
-            <span style={{ color: 'var(--color-accent)', fontWeight: 500 }}>Running…</span>
+            <span style={{ color: 'var(--color-accent)', fontWeight: 500 }}>Runningâ€¦</span>
           ) : isCompleted ? (
             <span style={{ color: 'var(--color-pass)' }}>
               Completed{timing?.durationMs ? ` in ${formatMs(timing.durationMs)}` : ''}
@@ -228,7 +228,7 @@ function ModuleRow({ mod, status, timing, index }) {
   );
 }
 
-// ─── Main page ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function AnalysisPage({ sessionId, onSessionStart }) {
   const navigate = useNavigate();
@@ -245,7 +245,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
 
     async function poll() {
       try {
-        const data = await api.getStatus(sessionId);
+        const data = await api.getStatusAny(sessionId);
         setSession(data);
         onSessionStart && onSessionStart(sessionId);
 
@@ -284,7 +284,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
       clearInterval(timerRef.current);
       clearTimeout(autoNavRef.current);   // FE-014: cancel auto-nav on unmount
     };
-  // onSessionStart is a stable callback from App (useState setter) — safe to omit
+  // onSessionStart is a stable callback from App (useState setter) â€” safe to omit
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
@@ -300,25 +300,25 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
 
-      {/* ── Header ── */}
+      {/* â”€â”€ Header â”€â”€ */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>
-          {isDone ? 'Analysis Complete' : isFailed ? 'Analysis Failed' : 'Analyzing Project…'}
+          {isDone ? 'Analysis Complete' : isFailed ? 'Analysis Failed' : 'Analyzing Projectâ€¦'}
         </h1>
         {session && (
           <p style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
             {session.projectName}
-            {session.runNumber > 1 && ` · Re-run #${session.runNumber}`}
+            {session.runNumber > 1 && ` Â· Re-run #${session.runNumber}`}
           </p>
         )}
         {!session && !error && (
           <p style={{ color: 'var(--color-text-subtle)', fontSize: 13 }}>
-            Connecting to analysis engine…
+            Connecting to analysis engineâ€¦
           </p>
         )}
       </div>
 
-      {/* ── Error banner ── */}
+      {/* â”€â”€ Error banner â”€â”€ */}
       {error && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 24,
@@ -336,12 +336,12 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
             style={{ fontSize: 12, flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5 }}
             onClick={() => navigate('/')}
           >
-            ← New Analysis
+            â† New Analysis
           </button>
         </div>
       )}
 
-      {/* ── Timer + status strip ── */}
+      {/* â”€â”€ Timer + status strip â”€â”€ */}
       <div style={{
         display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap',
         marginBottom: 20, padding: '14px 16px',
@@ -389,7 +389,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
         </div>
       </div>
 
-      {/* ── Overall progress bar ── */}
+      {/* â”€â”€ Overall progress bar â”€â”€ */}
       {(isRunning || isDone) && (
         <div style={{ marginBottom: 24 }}>
           <div style={{
@@ -407,7 +407,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
             <span style={{ fontSize: 10, color: 'var(--color-text-subtle)' }}>
-              {isDone ? 'All checks complete' : 'Running analysis modules…'}
+              {isDone ? 'All checks complete' : 'Running analysis modulesâ€¦'}
             </span>
             <span style={{ fontSize: 10, color: 'var(--color-text-subtle)', fontFamily: 'var(--font-mono)' }}>
               {isDone
@@ -418,7 +418,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
         </div>
       )}
 
-      {/* ── Module rows ── */}
+      {/* â”€â”€ Module rows â”€â”€ */}
       <div>
         {MODULES.map((mod, index) => {
           const status = session?.moduleStatuses?.[mod.key] || 'pending';
@@ -435,7 +435,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
         })}
       </div>
 
-      {/* ── No session yet — initial loading placeholder ── */}
+      {/* â”€â”€ No session yet â€” initial loading placeholder â”€â”€ */}
       {!session && !error && (
         <div style={{
           marginTop: 12, padding: '14px 16px', textAlign: 'center',
@@ -443,11 +443,11 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
         }}>
           <span className="spinner" />
-          Waiting for analysis engine…
+          Waiting for analysis engineâ€¦
         </div>
       )}
 
-      {/* ── Completion banner ── */}
+      {/* â”€â”€ Completion banner â”€â”€ */}
       {isDone && (
         <div style={{
           marginTop: 20, padding: '16px 20px',
@@ -463,7 +463,7 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
               Analysis complete in {formatMs(session.totalDurationMs)}
             </div>
             <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>
-              Redirecting to findings in a moment…
+              Redirecting to findings in a momentâ€¦
             </div>
           </div>
           <button
@@ -471,12 +471,12 @@ export function AnalysisPage({ sessionId, onSessionStart }) {
             style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}
             onClick={() => navigate(`/analysis/${sessionId}/findings`)}
           >
-            View Findings →
+            View Findings â†’
           </button>
         </div>
       )}
 
-      {/* ── Failed footer ── */}
+      {/* â”€â”€ Failed footer â”€â”€ */}
       {isFailed && !isDone && (
         <div style={{ marginTop: 20, display: 'flex', gap: 10, justifyContent: 'center' }}>
           <button

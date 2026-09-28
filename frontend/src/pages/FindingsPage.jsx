@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+﻿import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import { FindingCard } from '../components/findings/FindingCard';
@@ -29,7 +29,7 @@ const SORTS = [
   { key: 'file', label: 'File' },
 ];
 
-// ─── SVG Icons ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function IconCheck({ size = 28 }) {
   return (
@@ -98,7 +98,7 @@ export function FindingsPage({ sessionId }) {
   const loadFindings = useCallback(async () => {
     setError(null);  // clear previous load error before each attempt
     try {
-      const data = await api.getFindings(sessionId);
+      const data = await api.getFindingsAny(sessionId);
       setFindings(data.findings || []);
       setError(null);
     } catch (err) {
@@ -114,7 +114,7 @@ export function FindingsPage({ sessionId }) {
     setRemediating(finding.id);
     setRemediationError(null);
     try {
-      await api.remediate(sessionId, finding.remediationId, finding.id);
+      await api.remediateAny(sessionId, finding.remediationId, finding.id);
       await loadFindings();
       toast.success(`Auto-fix applied: ${finding.title}`);
     } catch (err) {
@@ -172,21 +172,21 @@ export function FindingsPage({ sessionId }) {
 
   return (
     <div style={{ maxWidth: 'var(--content-max)', margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
-      {/* Header — flex-wrap so buttons stack on mobile */}
+      {/* Header â€” flex-wrap so buttons stack on mobile */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 'var(--space-6)' }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>Findings</h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
             {findings.length} finding{findings.length !== 1 ? 's' : ''} detected
-            {counts.fixed > 0 && <> · <span style={{ color: 'var(--color-pass)' }}>{counts.fixed} fixed</span></>}
+            {counts.fixed > 0 && <> Â· <span style={{ color: 'var(--color-pass)' }}>{counts.fixed} fixed</span></>}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <button className="btn-secondary" style={{ fontSize: 13 }} onClick={() => navigate(`/analysis/${sessionId}/action-plan`)}>
-            Action Plan →
+            Action Plan â†’
           </button>
           <button className="btn-secondary" style={{ fontSize: 13 }} onClick={() => navigate(`/analysis/${sessionId}/report`)}>
-            Report →
+            Report â†’
           </button>
         </div>
       </div>
@@ -244,7 +244,7 @@ export function FindingsPage({ sessionId }) {
         })}
       </div>
 
-      {/* ── Toolbar: search, status, auto-fix, sort ── */}
+      {/* â”€â”€ Toolbar: search, status, auto-fix, sort â”€â”€ */}
       <div style={{
         display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-3)',
         flexWrap: 'wrap', alignItems: 'center',
@@ -255,7 +255,7 @@ export function FindingsPage({ sessionId }) {
             className="input"
             type="search"
             value={query}
-            placeholder="Search title, explanation, file…"
+            placeholder="Search title, explanation, fileâ€¦"
             aria-label="Search findings"
             onChange={e => setParam('q', e.target.value, '')}
           />
@@ -328,7 +328,7 @@ export function FindingsPage({ sessionId }) {
         )}
       </div>
 
-      {/* Severity filter — with count per severity */}
+      {/* Severity filter â€” with count per severity */}
       <div style={{ display: 'flex', gap: 6, marginBottom: 'var(--space-5)', flexWrap: 'wrap' }}>
         {SEVERITIES.map(sev => {
           const cnt = sev === 'all' ? findings.length : (counts[sev] ?? 0);
@@ -368,7 +368,7 @@ export function FindingsPage({ sessionId }) {
         </div>
       )}
 
-      {/* Remediation error — inline, no alert() */}
+      {/* Remediation error â€” inline, no alert() */}
       {remediationError && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 16,
@@ -391,13 +391,13 @@ export function FindingsPage({ sessionId }) {
       )}
 
       {loading ? (
-        /* Loading state — spinner */
+        /* Loading state â€” spinner */
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--color-text-muted)', fontSize: 13, padding: '24px 0' }}>
           <span className="spinner" />
-          Loading findings…
+          Loading findingsâ€¦
         </div>
       ) : filtered.length === 0 ? (
-        /* Empty state — SVG icon, no emoji */
+        /* Empty state â€” SVG icon, no emoji */
         <div style={{
           textAlign: 'center', padding: '48px 24px',
           background: 'var(--color-surface)', border: '1px dashed var(--color-border)',

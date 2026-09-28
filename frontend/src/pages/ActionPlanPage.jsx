@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useCallback } from 'react';
+﻿import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { SeverityBadge } from '../components/findings/SeverityBadge';
 import { useToast } from '../components/ui/Toast';
 
-// ─── Static config ─────────────────────────────────────────────────────────────
+// â”€â”€â”€ Static config â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const SEVERITIES = ['critical', 'high', 'medium', 'low', 'info'];
 
@@ -30,7 +30,7 @@ const WORKFLOW_STEPS = [
   { key: 'verified',   label: 'Verified',   desc: 'Confirmed resolved' },
 ];
 
-// ─── SVG Icons ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ SVG Icons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function IconCheck({ size = 14 }) {
   return (
@@ -82,7 +82,7 @@ function IconWrench({ size = 14 }) {
   );
 }
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /**
  * Derive a display status for an action plan item from its linked findings.
@@ -104,7 +104,7 @@ const STATUS_CONFIG = {
   open:        { label: 'Open',        cls: 'badge-critical',  Icon: IconX    },
 };
 
-// ─── Sub-components ────────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function WorkflowBanner() {
   return (
@@ -143,7 +143,7 @@ function SeverityCountBar({ plan, findings }) {
             <span style={{ fontWeight: 800, fontFamily: 'var(--font-mono)' }}>{count}</span>
             <span style={{ textTransform: 'capitalize' }}>{sev}</span>
             {open < count && (
-              <span style={{ opacity: 0.7, fontWeight: 400 }}>· {count - open} fixed</span>
+              <span style={{ opacity: 0.7, fontWeight: 400 }}>Â· {count - open} fixed</span>
             )}
           </div>
         );
@@ -200,7 +200,7 @@ function ActionCard({ item, findings, remediating, onRemediate, navigate, sessio
         transition: 'box-shadow 0.15s',
       }}
     >
-      {/* ── Top row ── */}
+      {/* â”€â”€ Top row â”€â”€ */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
 
         {/* Priority circle */}
@@ -302,7 +302,7 @@ function ActionCard({ item, findings, remediating, onRemediate, navigate, sessio
               display: 'flex', alignItems: 'center', gap: 4,
             }}
           >
-            {expanded ? '▲ Less detail' : '▼ Show recommendation'}
+            {expanded ? 'â–² Less detail' : 'â–¼ Show recommendation'}
           </button>
         </div>
 
@@ -316,7 +316,7 @@ function ActionCard({ item, findings, remediating, onRemediate, navigate, sessio
               style={{ fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap' }}
             >
               {remediating === item.id ? (
-                <><span className="spinner" style={{ width: 11, height: 11, borderWidth: 2 }} /> Applying…</>
+                <><span className="spinner" style={{ width: 11, height: 11, borderWidth: 2 }} /> Applyingâ€¦</>
               ) : (
                 <><IconBolt size={12} /> Apply Fix</>
               )}
@@ -336,7 +336,7 @@ function ActionCard({ item, findings, remediating, onRemediate, navigate, sessio
   );
 }
 
-// ─── Main page ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Main page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function ActionPlanPage({ sessionId }) {
   const navigate = useNavigate();
@@ -354,8 +354,8 @@ export function ActionPlanPage({ sessionId }) {
     setError(null);
     try {
       const [planData, findingsData] = await Promise.all([
-        api.getActionPlan(sessionId),
-        api.getFindings(sessionId),
+        api.getActionPlanAny(sessionId),
+        api.getFindingsAny(sessionId),
       ]);
       setPlan(planData.actionPlan || []);
       setFindings(findingsData.findings || []);
@@ -373,13 +373,13 @@ export function ActionPlanPage({ sessionId }) {
     setActionError(null);
     try {
       // Re-fetch findings from current state to avoid stale status filter
-      const freshData = await api.getFindings(sessionId);
+      const freshData = await api.getFindingsAny(sessionId);
       const freshFindings = freshData.findings || [];
       const remediable = (item.findingIds || [])
         .map(id => freshFindings.find(f => f.id === id))
         .filter(f => f && f.remediable && f.status !== 'fixed');
       for (const f of remediable) {
-        await api.remediate(sessionId, f.remediationId, f.id);
+        await api.remediateAny(sessionId, f.remediationId, f.id);
       }
       await load();
       toast.success(
@@ -400,7 +400,7 @@ export function ActionPlanPage({ sessionId }) {
     setReanalyzing(true);
     setActionError(null);
     try {
-      const { sessionId: newId } = await api.reanalyze(sessionId);
+      const { sessionId: newId } = await api.reanalyzeAny(sessionId);
       toast.info('Re-analysis started');
       navigate(`/analysis/${newId}`);
     } catch (err) {
@@ -425,17 +425,17 @@ export function ActionPlanPage({ sessionId }) {
   return (
     <div style={{ maxWidth: 900, margin: '0 auto', padding: 'var(--space-8) var(--space-6)' }}>
 
-      {/* ── Page header ── */}
+      {/* â”€â”€ Page header â”€â”€ */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 800, letterSpacing: '-0.02em', marginBottom: 4 }}>
             Release Action Plan
           </h1>
           <p style={{ color: 'var(--color-text-muted)', fontSize: 13 }}>
-            {plan.length} action item{plan.length !== 1 ? 's' : ''} ·{' '}
+            {plan.length} action item{plan.length !== 1 ? 's' : ''} Â·{' '}
             <span style={{ color: 'var(--color-critical)', fontWeight: 600 }}>{totalOpen} open</span>
-            {totalResolved > 0 && <> · <span style={{ color: 'var(--color-pass)', fontWeight: 600 }}>{totalResolved} resolved</span></>}
-            {autoFixCount > 0 && <> · {autoFixCount} with auto-fix</>}
+            {totalResolved > 0 && <> Â· <span style={{ color: 'var(--color-pass)', fontWeight: 600 }}>{totalResolved} resolved</span></>}
+            {autoFixCount > 0 && <> Â· {autoFixCount} with auto-fix</>}
           </p>
         </div>
 
@@ -446,17 +446,17 @@ export function ActionPlanPage({ sessionId }) {
           style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
         >
           {reanalyzing ? (
-            <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Starting…</>
+            <><span className="spinner" style={{ width: 12, height: 12, borderWidth: 2 }} /> Startingâ€¦</>
           ) : (
             <><IconRefresh size={13} /> Re-Run Analysis</>
           )}
         </button>
       </div>
 
-      {/* ── Workflow banner ── */}
+      {/* â”€â”€ Workflow banner â”€â”€ */}
       <WorkflowBanner />
 
-      {/* ── Load error ── */}
+      {/* â”€â”€ Load error â”€â”€ */}
       {error && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20,
@@ -474,7 +474,7 @@ export function ActionPlanPage({ sessionId }) {
         </div>
       )}
 
-      {/* ── Action error (remediate / reanalyze) — inline, no alert() ── */}
+      {/* â”€â”€ Action error (remediate / reanalyze) â€” inline, no alert() â”€â”€ */}
       {actionError && (
         <div style={{
           display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20,
@@ -492,15 +492,15 @@ export function ActionPlanPage({ sessionId }) {
         </div>
       )}
 
-      {/* ── Loading ── */}
+      {/* â”€â”€ Loading â”€â”€ */}
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: 'var(--color-text-muted)', fontSize: 13, padding: '32px 0' }}>
           <span className="spinner" />
-          Loading action plan…
+          Loading action planâ€¦
         </div>
       ) : plan.length === 0 ? (
 
-        /* ── Empty state ── */
+        /* â”€â”€ Empty state â”€â”€ */
         <div style={{
           textAlign: 'center', padding: '48px 24px',
           background: 'var(--color-surface)', border: '1px dashed var(--color-border)',
@@ -518,16 +518,16 @@ export function ActionPlanPage({ sessionId }) {
             style={{ marginTop: 16, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13 }}
           >
             <IconRefresh size={13} />
-            {reanalyzing ? 'Starting…' : 'Run another analysis'}
+            {reanalyzing ? 'Startingâ€¦' : 'Run another analysis'}
           </button>
         </div>
 
       ) : (
         <>
-          {/* ── Severity count bar ── */}
+          {/* â”€â”€ Severity count bar â”€â”€ */}
           <SeverityCountBar plan={plan} findings={findings} />
 
-          {/* ── Severity filter tabs ── */}
+          {/* â”€â”€ Severity filter tabs â”€â”€ */}
           <div style={{ display: 'flex', gap: 4, marginBottom: 20, flexWrap: 'wrap' }}>
             {['all', ...presentSeverities].map(sev => {
               const active = sevFilter === sev;
@@ -551,7 +551,7 @@ export function ActionPlanPage({ sessionId }) {
             })}
           </div>
 
-          {/* ── Action item cards ── */}
+          {/* â”€â”€ Action item cards â”€â”€ */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {visiblePlan.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: 'var(--color-text-subtle)', fontSize: 13 }}>
@@ -572,14 +572,14 @@ export function ActionPlanPage({ sessionId }) {
             )}
           </div>
 
-          {/* ── Footer nav ── */}
+          {/* â”€â”€ Footer nav â”€â”€ */}
           <div style={{ display: 'flex', gap: 10, justifyContent: 'space-between', marginTop: 32, flexWrap: 'wrap' }}>
             <button className="btn-secondary" onClick={() => navigate(`/analysis/${sessionId}/findings`)} style={{ fontSize: 13 }}>
-              ← Back to Findings
+              â† Back to Findings
             </button>
             <div style={{ display: 'flex', gap: 8 }}>
               <button className="btn-secondary" onClick={() => navigate(`/analysis/${sessionId}/report`)} style={{ fontSize: 13 }}>
-                View Report →
+                View Report â†’
               </button>
               <button
                 className="btn-ghost"
@@ -588,7 +588,7 @@ export function ActionPlanPage({ sessionId }) {
                 style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}
               >
                 <IconRefresh size={13} />
-                {reanalyzing ? 'Starting…' : 'Re-Run Analysis'}
+                {reanalyzing ? 'Startingâ€¦' : 'Re-Run Analysis'}
               </button>
             </div>
           </div>
