@@ -182,8 +182,9 @@ Hackathon by team The7th Neo.
   build/release module runs `npm install`. This is harmless and does not affect
   the seeded defects the analysis is meant to detect.
 - Remediations have not yet been validated end-to-end across a re-analysis run.
-  Superseded in 2.0.0: remediation is now confirmed working locally, and is
-  documented as unavailable on Vercel rather than broken.
+  **Done** — all four applied, all four findings moved to `fixed`, re-analysis
+  went 21 → 17, and the report's `beforeAfter` block read
+  `fixedCount: 4`. Evidence in `docs/devflow-plan.md`.
 
 [Unreleased]: https://github.com/Tauseef666-ctrl/ibm-bob-devflow/compare/v2.0.0...HEAD
 [2.0.0]: https://github.com/Tauseef666-ctrl/ibm-bob-devflow/compare/v1.0.0...v2.0.0

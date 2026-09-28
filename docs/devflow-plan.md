@@ -699,16 +699,42 @@ returned `ENOENT` for `npm`. After the fix, the false install finding is gone
 and build/release correctly reports the sample project's genuine seeded test
 failure.
 
-### Not yet verified
+### Remediation, re-analysis and before/after — verified 29 Sep 2026
 
-These are claimed by the sub-task status list above but have not been
-independently confirmed:
+This was the last outstanding claim. It was run end to end against a local
+backend (`node backend/src/index.js`) on `sample-project/`, then the sample
+project was restored from a copy so the seeded defects survived intact.
 
-- Applying each of the four remediations and observing the affected finding
-  change to `fixed`
-- Re-analysis showing a reduced finding count versus its parent run
-- The report's before/after comparison populated from a real parent session
-- A visual pass over the five frontend pages in a browser (the production build
-  compiles, but rendering and live polling have not been confirmed)
+| Step | Result |
+|---|---|
+| Run 1 | 21 findings (2 critical, 6 high, 6 medium, 6 low, 1 info) in 3999 ms |
+| `add-gitignore-node` | `Remediation applied successfully` — `.gitignore` created |
+| `add-env-example` | `Remediation applied successfully` — `.env.example` created |
+| `add-pkg-description` | `Remediation applied successfully` — field added |
+| `add-pkg-engines` | `Remediation applied successfully` — `engines.node` added |
+| Finding status after each fix | all four reported `status: "fixed"` |
+| Run 2 | 17 findings (2 critical, 6 high, 4 medium, 4 low, 1 info) in 4369 ms |
+| Report `beforeAfter` | `run1FindingCount: 21`, `run2FindingCount: 17`, `fixedCount: 4`, `remainingCount: 17` |
+| `sample-project/` after restore | clean in `git status` — byte-identical to committed state |
+
+The two critical findings survive both runs, which is correct: they are the
+failing test suite and the missing test coverage, neither of which any of the
+four allowlisted remediations can fix. `overallStatus` stays `not-ready`, as it
+should.
+
+Note that `POST /api/analysis/:id/remediate` requires **both** `remediationId`
+and `findingId`. Sending only `remediationId` returns
+`remediationId and findingId are required`, which is correct but easy to trip
+over when testing by hand.
+
+### Still not verified
+
+- A visual pass over the five frontend pages in a browser. The production build
+  compiles and the deployed bundle was inspected, but rendering, live polling
+  and click-through navigation have not been confirmed in a real browser. This
+  remains the one substantive gap.
+- `npm install` inside the build/release module against a clean checkout. On
+  Vercel it is skipped by design; locally it ran against an already-installed
+  `sample-project/`.
 - The `DEP0190` warning appears in the backend console on every analysis run —
   expected, and documented rather than suppressed
