@@ -6,14 +6,7 @@
     "api/index.js": {
       "memory": 512,
       "maxDuration": 30,
-      "includeFiles": [
-        "sample-project/README.md",
-        "sample-project/CHANGELOG.md",
-        "sample-project/package.json",
-        "sample-project/package-lock.json",
-        "sample-project/src/**",
-        "sample-project/tests/**"
-      ]
+      "includeFiles": "sample-project/**"
     }
   },
   "rewrites": [
