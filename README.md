@@ -7,6 +7,21 @@ sequence, their findings are aggregated and severity-ranked, and the result is a
 prioritised action plan and a Release Readiness Report — with real measured
 timings, not estimates.
 
+## Live deployment
+
+**[ibm-bob-devflow-tauseef666-ctrls-projects.vercel.app](https://ibm-bob-devflow-tauseef666-ctrls-projects.vercel.app)**
+— the SPA and the API on one origin.
+
+The analysis genuinely runs in production. A full run of all five modules
+returns **21 findings (2 critical, 6 high, 6 medium, 6 low, 1 info) in about
+700 ms**, identical to a local run. The one intentional failing test is reported
+as a real failing test, not smoothed over.
+
+Auto-remediation is the exception: it writes real files, and a serverless bundle
+is read-only, so the UI says so plainly instead of failing. Run the backend
+locally (`npm start`) for that. See
+[docs/deployment.md](docs/deployment.md).
+
 ## The Problem
 
 Before releasing or maintaining an application, developers perform a repetitive manual checklist:
@@ -264,7 +279,11 @@ questions.
   analysis, so module checks are JavaScript-specific.
 - **Sessions are in-memory.** Analysis state is lost when the backend restarts.
   There is no database, so there is also no history across runs beyond the
-  parent/parent-child comparison held in a single server lifetime.
+  parent/parent-child comparison held in a single server lifetime. On Vercel the
+  session store is bypassed entirely: `POST /api/analysis/run` does the whole
+  workflow in one request and the frontend caches the result in
+  `sessionStorage`, so a cold start is not a problem. What is lost in production
+  is the parent/child comparison between runs, which needs a persistent store.
 - **The remediator is deliberately narrow.** Exactly four non-destructive
   operations are allowlisted. Anything requiring judgement — refactoring
   duplicated code, fixing a failing test, writing a missing README — is
@@ -279,11 +298,20 @@ questions.
 - **No CI.** Everything is validated manually before commit. There is no
   automated pipeline, so there is no badge proving the tests pass.
 - **The frontend has no test suite.** The production build is verified to
-  compile, but there are no component or end-to-end UI tests.
+  compile, but there are no component or end-to-end UI tests. The UI has also
+  never been click-tested in a real browser — it was verified by building it,
+  by scripted API checks, and by inspecting the deployed bundle.
+- **Auto-remediation is local-only.** It writes real files, and a serverless
+  bundle is read-only. The UI reports that reason rather than pretending the
+  button worked.
+- **No animations or dark mode.** The UI is functional and clean, not
+  polished. This was cut deliberately once the functional bugs were fixed.
 
 ## Future Improvements
 
-- Persist sessions so release-readiness history survives a restart
+- Persist sessions so release-readiness history survives a restart, and so the
+  before/after comparison works on the hosted deployment
+- Animate the UI, respecting `prefers-reduced-motion`
 - Support multiple target projects and a comparison view between them
 - Add frontend component tests and a CI pipeline running the backend suite on
   every push

@@ -5,10 +5,25 @@ All notable changes to DevFlow AI are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0] - 2026-09-29
+
+Analysis now runs in production on Vercel and returns findings identical to a
+local run: **21 findings (2 critical, 6 high, 6 medium, 6 low, 1 info) in roughly
+700 ms.**
 
 ### Added
 
+- **`POST /api/analysis/run`** — a synchronous endpoint that performs the whole
+  workflow inside a single request and returns findings, action plan and report
+  together. Vercel gives each invocation a fresh module instance, so the
+  in-memory store could not hold a session between requests; this removes that
+  dependency entirely.
+- **Capability reporting** — `GET /api/health` returns `"stateful": false` when
+  `process.env.VERCEL` is set. The frontend reads it and selects the synchronous
+  path automatically, so no configuration is needed per environment.
+- **Client-side result cache** — the frontend stores a run result in
+  `sessionStorage` and all five pages read from it, falling back to the
+  per-session endpoints that still work locally.
 - **Vercel deployment configuration** — `vercel.json` routes `/api/*` to a
   serverless function (`api/index.js`) that wraps the existing Express app, so
   the SPA and the API are served from a single origin and no CORS preflight is
@@ -34,21 +49,61 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **The in-memory store is no longer on the critical path in production.** The
+  `start` + poll endpoints are unchanged and still used locally; serverless
+  deployments use `POST /api/analysis/run` instead.
 - **Frontend deployable on its own** — `frontend/vercel.json` pins `npm run
   build`, a `dist` output directory and the SPA fallback rewrite for a project
   whose Root Directory is `frontend`, and `frontend/package.json` gains a
   `vercel-build` alias of `build`. A frontend-rooted Vercel project previously
   failed with `Missing script: "vercel-build"`, because that script only existed
-  in the root `package.json`. See `docs/deployment.md`. The API still cannot run
-  there; this is a UI shell only.
-- `uuid` upgraded from v9 to v14 in the backend. The CommonJS
-  `require('uuid')` call style is unaffected; verified that all backend modules
-  still load and the test suite still passes.
+  in the root `package.json`. See `docs/deployment.md`.
+- **Auto-remediation reports why it is unavailable in production** rather than
+  failing with a bare 404, because the analysed files live in a read-only
+  bundle. It still works when the backend runs locally.
 - `frontend/public/_redirects` added for static hosts that support it. On
   Vercel the equivalent SPA fallback is declared in `vercel.json`.
 
+### Fixed
+
+- **The analysis returned the wrong findings on Vercel: 18 instead of 21.** Two
+  independent causes. Non-JS files never reached the function, so
+  `documentation.js:22` saw no `README.md` and *inverted* its findings,
+  reporting `README.md is missing` while omitting `readme-no-setup`,
+  `missing-env-docs` and `No CHANGELOG found`. Separately, `buildRelease.js`
+  returns early when `npm install` fails, and that install cannot succeed in a
+  read-only bundle, so it emitted a false critical finding *and suppressed the
+  real `npm test failed` one*. Fixed with `"includeFiles": "sample-project/**"`
+  and by skipping the install when `process.env.VERCEL` is set.
+- **Every Vercel build failed** with `Invalid vercel.json - functions['api/index.js'].includeFiles' should be string`. The field takes a string, not an array. This is now reproducible locally with `npx vercel build` rather than burning a build cycle.
+- **UI text was mangled in all five pages.** A previous refactor applied its
+  renames with PowerShell `-replace` piped to `Set-Content`, which decoded the
+  files as single-byte text and re-encoded every multi-byte character, so em
+  dashes and ellipses rendered as garbage. Restored from the last clean commit
+  and reapplied with Node. Added `.gitattributes` to normalise line endings.
+- **An untrusted `Origin` produced a 500** instead of a CORS rejection, because
+  the `cors` callback rejected with an error. `FRONTEND_URL` also now accepts a
+  comma-separated list, so the combined and standalone deployments can both be
+  allowed.
+- `vercel link` added a blanket `.env*` rule to `.gitignore`, which would have
+  silently ignored a future `.env.example` and dropped it from the repository.
+  Narrowed to local-only files.
+
+### Removed
+
+- `uuid` (ESM-only) is no longer a dependency. It was replaced with
+  `backend/src/ids.js`, which uses `node:crypto.randomUUID()`. The original
+  concern was unfounded — these projects run Node 24, which supports
+  `require(ESM)` — but the dependency was unnecessary either way.
+
 ### Known Issues
 
+- **Auto-remediation is unavailable on Vercel.** It writes real files and the
+  function bundle is read-only, so the button reports that reason instead of
+  failing silently. Run the backend locally to apply fixes. Re-analysis *does*
+  work on the hosted deployment — it re-runs the workflow and caches the result
+  — but with no fixes to apply, the before/after comparison has nothing to show
+  and the two runs match.
 - The Vercel **Root Directory** setting must be left empty so the build runs at
   the repository root. This cannot be enforced from the repository, because
   Vercel does not read a root directory from `vercel.json`. See
@@ -59,14 +114,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   with the Root Directory: `frontend/dist` for the combined deployment, `dist`
   for a frontend-rooted one, and empty for a backend-rooted one. See
   `docs/deployment.md`.
-- **The analysis API cannot run on Vercel.** Verified, and deliberate: the target
-  is resolved as a fixed relative path (`backend/src/routes/analysis.js`), the
-  build/release module shells out to `npm install` and `npm test`, and
-  auto-remediation writes real files. A serverless bundle is read-only and does
-  not contain `sample-project/`, so all three fail. Removing them would mean
-  dropping the real wall-clock module timings, which is a core design decision
-  in `AGENTS.md`. Run the demo locally with `npm start`; treat Vercel as a UI
-  shell only. Details in `docs/deployment.md`.
+- `maxDuration` is 30s. Raising it to 300 is rejected on the current Vercel
+  plan, and is not needed: the synchronous endpoint answers in under two seconds.
+- An untrusted `Origin` still returns 500 rather than a clean CORS rejection. The
+  request is correctly refused; only the status code is unhelpful.
 
 ## [1.0.0] - 2026-09-26
 
@@ -131,6 +182,9 @@ Hackathon by team The7th Neo.
   build/release module runs `npm install`. This is harmless and does not affect
   the seeded defects the analysis is meant to detect.
 - Remediations have not yet been validated end-to-end across a re-analysis run.
+  Superseded in 2.0.0: remediation is now confirmed working locally, and is
+  documented as unavailable on Vercel rather than broken.
 
-[Unreleased]: https://github.com/Tauseef666-ctrl/ibm-bob-devflow/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/Tauseef666-ctrl/ibm-bob-devflow/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/Tauseef666-ctrl/ibm-bob-devflow/compare/v1.0.0...v2.0.0
 [1.0.0]: https://github.com/Tauseef666-ctrl/ibm-bob-devflow/releases/tag/v1.0.0
