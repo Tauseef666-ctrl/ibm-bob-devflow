@@ -13,6 +13,12 @@ const NPM = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 const MAX_EVIDENCE = 200;
 
+// On Vercel the analysed project lives in a read-only bundle and the function has no
+// outbound registry access, so `npm install` cannot succeed. Running it would report a
+// false "npm install failed" critical and short-circuit the real npm test check, so it
+// is skipped there. The test check still runs, because it needs no install step.
+const IS_SERVERLESS = !!process.env.VERCEL;
+
 // Simple semver pattern (major.minor.patch with optional pre-release)
 const SEMVER_RE = /^\d+\.\d+\.\d+(-[a-zA-Z0-9._-]+)?(\+[a-zA-Z0-9._-]+)?$/;
 
@@ -62,8 +68,14 @@ async function analyze(projectPath) {
     }));
   }
 
-  // 2. Run npm install (timed)
-  const installResult = await runCommand(NPM, ['install', '--prefer-offline'], projectPath, 60000);
+  // 2. Run npm install (timed). Skipped on serverless — see IS_SERVERLESS note above.
+  let installResult = { exitCode: 0, durationMs: 0, stdout: '', stderr: '', skipped: true };
+
+  if (IS_SERVERLESS) {
+    installResult.skipped = true;
+  } else {
+    installResult = await runCommand(NPM, ['install', '--prefer-offline'], projectPath, 60000);
+  }
 
   if (installResult.exitCode !== 0) {
     findings.push(makeFinding({
@@ -102,9 +114,13 @@ async function analyze(projectPath) {
       category: 'build-release',
       severity: 'info',
       title: `npm install and npm test completed successfully`,
-      explanation: `Dependencies installed in ${installResult.durationMs}ms. Tests passed in ${testResult.durationMs}ms.`,
+      explanation: installResult.skipped
+        ? `Tests passed in ${testResult.durationMs}ms. Dependency install was skipped in the serverless environment.`
+        : `Dependencies installed in ${installResult.durationMs}ms. Tests passed in ${testResult.durationMs}ms.`,
       affectedFile: null,
-      evidence: `install: ${installResult.durationMs}ms | test: ${testResult.durationMs}ms`,
+      evidence: installResult.skipped
+        ? `install: skipped (serverless) | test: ${testResult.durationMs}ms`
+        : `install: ${installResult.durationMs}ms | test: ${testResult.durationMs}ms`,
       recommendation: 'Continue verifying that all pre-release checks pass in CI.',
       remediable: false,
       remediationId: null,
